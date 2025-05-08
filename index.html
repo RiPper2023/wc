@@ -1,1802 +1,2390 @@
-<html><head><base href="https://dissaladillo.online/wp-json/wc/v3/">
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    line-height: 1.6;
-    padding: 20px;
-  }
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    position: relative;
-  }
-  h1, h2 {
-    color: #2c3e50;
-  }
-  .warning {
-    background-color: #f39c12;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-  }
-  .numbered-block {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  .collapsible {
-    background-color: #f1f1f1;
-    color: #444;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-  }
-  .active, .collapsible:hover {
-    background-color: #ccc;
-  }
-  .content {
-    padding: 0 18px;
-    display: none;
-    overflow: hidden;
-    background-color: #f1f1f1;
-  }
-  .collapsible:after {
-    content: '\002B';
-    color: #777;
-    font-weight: bold;
-    float: right;
-    margin-left: 5px;
-  }
-  .active:after {
-    content: "\2212";
-  }
-  .tabs {
-    display: flex;
-    margin-bottom: 20px;
-  }
-  .tab {
-    padding: 10px 20px;
-    cursor: pointer;
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    margin-right: 5px;
-  }
-  .tab.active {
-    background-color: #fff;
-    border-bottom: 1px solid #fff;
-  }
-  .tab-content {
-    display: none;
-    padding: 20px;
-    border: 1px solid #ccc;
-  }
-  .tab-content.active {
-    display: block;
-  }
-  #sales-report-viewer {
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    overflow-x: auto;
-  }
-  #sales-report-viewer pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-  #dashboard {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .dashboard-item {
-    background-color: #ecf0f1;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    flex-basis: calc(50% - 10px);
-  }
-  #total-sales-chart, #sales-by-date-chart {
-    width: 100%;
-    height: 300px;
-  }
-  .loader {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-  }
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  .order-item {
-    background-color: #ecf0f1;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-  }
-  .order-details {
-    display: none;
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #d6eaf8;
-    border-radius: 5px;
-  }
-  .filtered-total-viewer {
-    text-align: center;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 24px;
-    color: #2ecc71;
-    margin-bottom: 20px;
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .tracked-fields {
-    margin-top: 20px;
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .tracked-fields h3 {
-    margin-top: 0;
-    color: #2c3e50;
-  }
-  #tracked-fields-list {
-    list-style-type: none;
-    padding: 0;
-    columns: 2;
-    -webkit-columns: 2;
-    -moz-columns: 2;
-  }
-  #tracked-fields-list li {
-    margin-bottom: 5px;
-    break-inside: avoid-column;
-  }
-  #sales-by-category-chart {
-    width: 100%;
-    height: 300px;
-  }
-  .two-column-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  .column {
-    flex: 1;
-    min-width: 300px;
-  }
-  #total-sales-chart {
-    width: 100%;
-    height: 250px;
-  }
-  .loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-  .loading-content {
-    text-align: center;
-    background-color: white;
-    padding: 2em;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  .progress-bar {
-    background-color: #e0e0e0;
-    width: 100%;
-    height: 20px;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 1em;
-  }
-  .progress {
-    background-color: #3498db;
-    height: 100%;
-    width: 0;
-    transition: width 0.5s ease-in-out;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  th, td {
-    padding: 10px;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
-  th {
-    background-color: #f1f1f1;
-  }
-  #databases-list {
-    margin-bottom: 20px;
-  }
-  .database-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .connection-status {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  .connected {
-    background-color: #2ecc71;
-  }
-  .disconnected {
-    background-color: #e74c3c;
-  }
-  #refresh-databases {
-    padding: 10px 20px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  #refresh-databases:hover {
-    background-color: #2980b9;
-  }
-  .action-button {
-    margin: 2px;
-    padding: 5px 10px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-  .action-button:hover {
-    background-color: #2980b9;
-  }
-  .filter-buttons {
-    margin-bottom: 20px;
-  }
-  .filter-buttons button {
-    margin-right: 10px;
-    padding: 5px 10px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-  .filter-buttons button:hover {
-    background-color: #2980b9;
-  }
-  .discount-total {
-    background-color: #ffeb3b;
-    color: #000;
-    padding: 5px;
-    border-radius: 3px;
-    font-weight: bold;
-  }
-  .sum-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  .sum-button:hover {
-    background-color: #27ae60;
-  }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head><body>
-<div id="console" style="background-color: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
-</div>
-<div id="loading-screen" class="loading-overlay">
-  <div class="loading-content">
-    <h2>Cargando datos...</h2>
-    <p>Mostrando <span id="fetched-orders">0</span> de 782 órdenes (<span id="percentage">0.00</span>)%</p>
-    <div class="progress-bar">
-      <div id="completion-bar" class="progress"></div>
-    </div>
-  </div>
-</div>
-<div class="container">
-  <h1>Dashboard de Ventas - dissaladillo.online</h1>
-  <button id="sum-button" class="sum-button">SUMAR</button>
-  
-  <div class="tabs">
-    <div class="tab active" data-tab="overview">Vista General</div>
-    <div class="tab" data-tab="sales">Ventas</div>
-    <div class="tab" data-tab="orders">Pedidos</div>
-    <div class="tab" data-tab="products">Productos</div>
-    <div class="tab" data-tab="customers">Clientes</div>
-    <div class="tab" data-tab="databases">Bases de Datos</div>
-  </div>
-  
-  <div class="filter-buttons">
-    <button id="today-filter">Hoy</button>
-    <button id="month-filter">MES</button>
-  </div>
-
-  <div id="overview" class="tab-content active">
-    <div class="numbered-block" data-number="1">
-      <button class="collapsible">Advertencia</button>
-      <div class="content">
-        <div class="warning">
-          <strong>Advertencia:</strong> Esta página está realizando una conexión real a la API de WooCommerce de dissaladillo.online con las credenciales proporcionadas. Por favor, asegúrate de que esto es lo que realmente deseas hacer y ten en cuenta las implicaciones de seguridad.
-        </div>
-      </div>
-    </div>
-
-    <div class="two-column-layout">
-      <div class="column">
-        <div id="sales-report-viewer" class="dashboard-item numbered-block" data-number="2">
-          <button class="collapsible">Reporte de Ventas</button>
-          <div class="content">
-            <pre>Loading...</pre>
-          </div>
-        </div>
-
-        <div id="filters" class="numbered-block" data-number="3">
-          <button class="collapsible">Filtros</button>
-          <div class="content">
-            <input type="date" id="start-date" placeholder="Fecha inicio">
-            <input type="date" id="end-date" placeholder="Fecha fin">
-            <button id="apply-filters">Aplicar Filtros</button>
-            <button id="reset-filters">Resetear Filtros</button>
-          </div>
-        </div>
-
-        <div id="filtered-total-viewer" class="filtered-total-viewer numbered-block" data-number="5">
-          <button class="collapsible">Total Filtrado</button>
-          <div class="content">
-            <span id="filtered-total">0.00</span> €
-          </div>
-        </div>
-      </div>
-
-      <div class="column">
-        <div class="dashboard-item numbered-block" data-number="4">
-          <button class="collapsible">Total de Ventas Completadas</button>
-          <div class="content">
-            <canvas id="total-sales-chart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="sales" class="tab-content">
-    <div class="numbered-block" data-number="10">
-      <button class="collapsible">Ventas por Fecha</button>
-      <div class="content">
-        <canvas id="sales-by-date-chart"></canvas>
-      </div>
-    </div>
-    <div class="numbered-block" data-number="11">
-      <button class="collapsible">Resumen de Ventas</button>
-      <div class="content">
-        <div id="sales-summary"></div>
-      </div>
-    </div>
-    <div class="numbered-block" data-number="14" style="width: 100%;">
-      <button class="collapsible">Ventas por Categoría</button>
-      <div class="content">
-        <canvas id="sales-by-category-chart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <div id="orders" class="tab-content">
-    <div id="orders-filters">
-      <input type="date" id="order-start-date" placeholder="Fecha inicio">
-      <input type="date" id="order-end-date" placeholder="Fecha fin">
-      <input type="text" id="order-id-filter" placeholder="ID del Pedido">
-      <input type="text" id="order-status-filter" placeholder="Estado">
-      <input type="text" id="order-customer-filter" placeholder="Cliente">
-      <input type="text" id="order-cashier-filter" placeholder="Cajero">
-      <button id="apply-order-filters">Aplicar Filtros</button>
-      <button id="reset-order-filters">Resetear Filtros</button>
-    </div>
-    <div class="numbered-block" data-number="6">
-      <button class="collapsible">Listado de Pedidos</button>
-      <div class="content">
-        <button id="print-selected-orders" class="action-button">Imprimir Seleccionados</button>
-        <button id="generate-loading-sheet" class="action-button">Carga</button>
-        <table id="orders-table">
-          <thead>
-            <tr>
-              <th><input type="checkbox" id="select-all-orders"></th>
-              <th>ID</th>
-              <th>Estado</th>
-              <th>Cliente</th>
-              <th>Cajero</th>
-              <th>Total</th>
-              <th>Fecha</th>
-              <th>Reembolso</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="orders-table-body">
-          </tbody>
-        </table>
-        <div id="orders-pagination">
-          <button id="prev-page">Anterior</button>
-          <span id="page-info"></span>
-          <button id="next-page">Siguiente</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="tracked-fields" class="tracked-fields numbered-block" data-number="7">
-      <button class="collapsible">Campos Rastreables en Órdenes</button>
-      <div class="content">
-        <h3>Campos rastreados en las órdenes: <span id="tracked-fields-count"></span></h3>
-        <ul id="tracked-fields-list"></ul>
-      </div>
-    </div>
-
-    <div id="tracked-user-fields" class="tracked-fields numbered-block" data-number="15">
-      <button class="collapsible">Campos Rastreables en Usuarios</button>
-      <div class="content">
-        <h3>Campos rastreados en los usuarios: <span id="tracked-user-fields-count"></span></h3>
-        <ul id="tracked-user-fields-list"></ul>
-      </div>
-    </div>
-
-    <div id="tracked-yith-fields" class="tracked-fields numbered-block" data-number="17">
-      <button class="collapsible">Campos Rastreables en YITH POS</button>
-      <div class="content">
-        <h3>Campos rastreados en YITH POS: <span id="tracked-yith-fields-count"></span></h3>
-        <ul id="tracked-yith-fields-list"></ul>
-      </div>
-    </div>
-
-    <button id="update-orders-btn" class="numbered-block" data-number="8" style="margin-bottom: 20px; padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Actualizar y Cargar Todas las Órdenes Posibles</button>
-
-    <div id="dashboard">
-      <div class="dashboard-item numbered-block" data-number="9">
-        <button class="collapsible">Completitud de Datos</button>
-        <div class="content">
-          <p>Mostrando <span id="fetched-orders"></span> de 782 órdenes (<span id="percentage"></span>%)</p>
-          <div style="background-color: #e0e0e0; width: 100%; height: 20px; border-radius: 10px;">
-            <div id="completion-bar" style="background-color: #3498db; height: 100%; border-radius: 10px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-item numbered-block" data-number="12">
-        <button class="collapsible">Resumen de Pedidos</button>
-        <div class="content">
-          <div id="orders-summary"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="products" class="tab-content">
-    <div class="dashboard-item numbered-block" data-number="13">
-      <button class="collapsible">Productos más Vendidos</button>
-      <div class="content">
-        <div id="top-products"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="customers" class="tab-content">
-    <div class="numbered-block" data-number="18">
-      <button class="collapsible">Lista de Clientes</button>
-      <div class="content">
-        <table id="customers-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Total de Pedidos</th>
-              <th>Total Gastado</th>
-            </tr>
-          </thead>
-          <tbody id="customers-table-body">
-          </tbody>
-        </table>
-        <div id="customers-pagination">
-          <button id="prev-customers-page">Anterior</button>
-          <span id="customers-page-info"></span>
-          <button id="next-customers-page">Siguiente</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="databases" class="tab-content">
-    <div class="numbered-block" data-number="16">
-      <button class="collapsible">Bases de Datos Disponibles</button>
-      <div class="content">
-        <div id="databases-list"></div>
-        <button id="refresh-databases">Refrescar Bases de Datos</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script>
-    const consumerKey = 'ck_1983c80f42e03340aef18305419e38be02d82f9c';
-    const consumerSecret = 'cs_00efa63f667c041a8b48c465a823767c4c76b91b';
-    const baseUrl = 'https://dissaladillo.online/wp-json/wc/v3/';
-    
-    let allOrders = [];
-    let productsData = [];
-    let categoriesData = [];
-    let totalSalesChart, salesByDateChart, salesByCategoryChart;
-    let customersData = [];
-    let currentPage = 1;
-    let currentCustomersPage = 1;
-    const ordersPerPage = 20;
-    const customersPerPage = 20;
-
-    function getCashierName(order) {
-      const cashierMeta = order.meta_data.find(meta => 
-        meta.key === 'yith_pos_cashier' || 
-        meta.key === 'pos_cashier' || 
-        meta.key === '_yith_pos_cashier'
-      );
-      if (cashierMeta) {
-        const match = cashierMeta.value.match(/(.*?)\s*(?:<(.+)>)?$/);
-        if (match) {
-          return {
-            name: match[1].trim(),
-            email: match[2] || 'N/A'
-          };
-        }
-        return {
-          name: cashierMeta.value,
-          email: 'N/A'
+<html>
+<head>
+    <meta charset="UTF-8">
+    <base href="http://localhost:">
+    <title>Integraci&#xf3;n de API WooCommerce</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        const consumerKey = 'ck_013c8f79f58f11fc2b3a838dc815605712e516fd';
+        const consumerSecret = 'cs_71892b5b7f10593feff3c99e8ea2886efb70b354';
+        const baseUrl = 'https://sistema-pedidos.online/wp-json/wc/v3';
+        const statusMapping = {
+          'CANCELADO': 'cancelled',
+          'TICKET': 'on-hold',
+          'LLAMAR': 'pending',
+          'TERMINAR': 'processing',
+          'DEBE': 'failed',
+          'PAGO': 'completed'
         };
-      }
-      return {
-        name: 'N/A',
-        email: 'N/A'
-      };
-    }
+        let cachedProducts = [];
+        let cachedCustomers = {};
+        let orderPositions = new Map();
+        let highlightedOrders = new Map();
+        let isInitialLoad = true;
+        let selectedTotals = new Set();
+        let isMouseDown = false;
+        let isCtrlPressed = false;
+        let draggedRow = null;
+        let rowPositions = new Map();
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+        let isFiltering = false;
 
-    function displayOrdersTable(orders) {
-      const tableBody = document.getElementById('orders-table-body');
-      tableBody.innerHTML = '';
+        function debugLog(message, type = 'info', data = null) {}
 
-      const startIndex = (currentPage - 1) * ordersPerPage;
-      const endIndex = startIndex + ordersPerPage;
-      const displayedOrders = orders.slice(startIndex, endIndex);
-
-      displayedOrders.forEach(order => {
-        const row = document.createElement('tr');
-        const customerName = `${order.billing.first_name} ${order.billing.last_name}`;
-        const cashier = getCashierName(order);
-        const isRefunded = order.refunds && order.refunds.length > 0;
-        const refundStatus = isRefunded ? '<span style="color: red; font-weight: bold;">Reembolsado</span>' : 'No';
-        row.innerHTML = `
-          <td><input type="checkbox" class="order-checkbox" data-order-id="${order.id}"></td>
-          <td>${order.id}</td>
-          <td>${order.status}</td>
-          <td>${customerName}</td>
-          <td>${cashier.name}<br><small>${cashier.email}</small></td>
-          <td>${order.total} ${order.currency}</td>
-          <td>${new Date(order.date_created).toLocaleString()}</td>
-          <td>${refundStatus}</td>
-          <td>
-            <button class="action-button" onclick="toggleOrderDetails(${order.id})">Detalles</button>
-            <button class="action-button" onclick="calculateOrder(${order.id})">CALCULAR</button>
-          </td>
-        `;
-        if (isRefunded) {
-          row.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-        }
-        tableBody.appendChild(row);
-
-        const totalCostAndProfit = calculateTotalCost(order);
-        const detailsRow = document.createElement('tr');
-        detailsRow.innerHTML = `
-          <td colspan="9">
-            <div id="order-details-${order.id}" class="order-details" style="display: none;">
-              <h4>Detalles del Pedido</h4>
-              <p><strong>Método de Pago:</strong> ${order.payment_method_title}</p>
-              <p><strong>Dirección de Envío:</strong> ${order.shipping.address_1}, ${order.shipping.city}, ${order.shipping.country}</p>
-              <p><strong>Total de Coste:</strong> ${totalCostAndProfit.cost} ${order.currency}</p>
-              <p><strong>Profit:</strong> ${totalCostAndProfit.profit} ${order.currency}</p>
-              <p><strong>Cajero:</strong> ${cashier.name} (${cashier.email})</p>
-              <h5>Artículos:</h5>
-              <ul>
-                ${order.line_items.map(item => {
-                  const product = productsData.find(p => p.id === item.product_id);
-                  const cogCost = product ? (product.meta_data.find(meta => meta.key === 'yith_cog_cost')?.value || 'N/A') : 'N/A';
-                  const profit = cogCost !== 'N/A' ? (parseFloat(item.price) - parseFloat(cogCost)).toFixed(2) : 'N/A';
-                  return `<li>${item.name} - Cantidad: ${item.quantity}, Precio: ${item.price} ${order.currency}, YITH COG Cost: ${cogCost}, Profit: ${profit} ${order.currency}</li>`;
-                }).join('')}
-              </ul>
-            </div>
-          </td>
-        `;
-        tableBody.appendChild(detailsRow);
-      });
-
-      updatePagination(orders.length);
-      
-      document.getElementById('select-all-orders').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.order-checkbox');
-        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-      });
-    }
-
-    function displayCustomersTable(customers) {
-      const tableBody = document.getElementById('customers-table-body');
-      tableBody.innerHTML = '';
-
-      const startIndex = (currentCustomersPage - 1) * customersPerPage;
-      const endIndex = startIndex + customersPerPage;
-      const displayedCustomers = customers.slice(startIndex, endIndex);
-
-      displayedCustomers.forEach(customer => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${customer.id}</td>
-          <td>${customer.first_name} ${customer.last_name}</td>
-          <td>${customer.email}</td>
-          <td>${customer.orders_count}</td>
-          <td>${parseFloat(customer.total_spent).toFixed(2)} €</td>
-        `;
-        tableBody.appendChild(row);
-      });
-
-      updateCustomersPagination(customers.length);
-    }
-
-    function updateCustomersPagination(totalCustomers) {
-      const totalPages = Math.ceil(totalCustomers / customersPerPage);
-      const pageInfo = document.getElementById('customers-page-info');
-      pageInfo.textContent = `Página ${currentCustomersPage} de ${totalPages}`;
-
-      const prevButton = document.getElementById('prev-customers-page');
-      const nextButton = document.getElementById('next-customers-page');
-
-      prevButton.disabled = currentCustomersPage === 1;
-      nextButton.disabled = currentCustomersPage === totalPages;
-    }
-
-    function updateDashboard(filteredOrders, products, categories) {
-      displayTotalSalesChart(filteredOrders);
-      displaySalesByDateChart(filteredOrders);
-      displaySalesSummary(filteredOrders);
-      displayTopProducts(filteredOrders, products);
-      displaySalesByCategory(filteredOrders, products, categories);
-      displayOrdersTable(filteredOrders);
-      updateTrackedFields(filteredOrders);
-    }
-
-    function setupTabs() {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          const tabId = tab.getAttribute('data-tab');
-          activateTab(tabId);
-        });
-      });
-    }
-
-    function activateTab(tabId) {
-      const tabs = document.querySelectorAll('.tab');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      tabs.forEach(tab => tab.classList.remove('active'));
-      tabContents.forEach(content => content.classList.remove('active'));
-      
-      document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    function updatePagination(totalOrders) {
-      const totalPages = Math.ceil(totalOrders / ordersPerPage);
-      const pageInfo = document.getElementById('page-info');
-      pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-
-      const prevButton = document.getElementById('prev-page');
-      const nextButton = document.getElementById('next-page');
-
-      prevButton.disabled = currentPage === 1;
-      nextButton.disabled = currentPage === totalPages;
-    }
-
-    function getDiscountAppliedBy(order) {
-      const discountMeta = order.meta_data.find(meta => 
-        meta.key === 'discount_applied_by' || 
-        meta.key === '_discount_applied_by' ||
-        meta.key === 'yith_pos_discount_applied_by'
-      );
-
-      if (discountMeta) {
-        return discountMeta.value;
-      }
-
-      const cashierMeta = order.meta_data.find(meta => 
-        meta.key === 'yith_pos_cashier' || 
-        meta.key === 'pos_cashier' || 
-        meta.key === '_yith_pos_cashier'
-      );
-
-      if (cashierMeta) {
-        return cashierMeta.value;
-      }
-
-      return order.created_by || 'Desconocido';
-    }
-
-    function calculateTotalCost(order) {
-      let totalCost = 0;
-      let totalProfit = 0;
-      order.line_items.forEach(item => {
-        const product = productsData.find(p => p.id === item.product_id);
-        const cogCost = product ? parseFloat(product.meta_data.find(meta => meta.key === 'yith_cog_cost')?.value || 0) : 0;
-        const itemCost = cogCost * item.quantity;
-        const itemProfit = (parseFloat(item.total) - itemCost);
-        totalCost += itemCost;
-        totalProfit += itemProfit;
-      });
-      return { cost: totalCost.toFixed(2), profit: totalProfit.toFixed(2) };
-    }
-
-    function calculateOrdersTotals(orders) {
-      return orders.reduce((totals, order) => {
-        totals.total += parseFloat(order.total);
-        totals.quantity += order.line_items.reduce((sum, item) => sum + item.quantity, 0);
-        return totals;
-      }, { total: 0, quantity: 0 });
-    }
-
-    function generatePrintContent(orders) {
-      const totals = calculateOrdersTotals(orders);
-      let totalProfit = 0;
-      
-      orders.forEach(order => {
-        const { profit } = calculateTotalCost(order);
-        totalProfit += parseFloat(profit);
-      });
-      
-      let content = `
-        <html>
-          <head>
-            <title>Pedidos Seleccionados</title>
-            <style>
-              body { font-family: Arial, sans-serif; }
-              table { width: 100%; border-collapse: collapse; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-              .totals { margin-top: 20px; font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <h1>Pedidos Seleccionados</h1>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Cliente</th>
-                  <th>Total</th>
-                  <th>Fecha</th>
-                  <th>Estado</th>
-                  <th>Profit</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
-
-      orders.forEach(order => {
-        const customerName = `${order.billing.first_name} ${order.billing.last_name}`;
-        const { profit } = calculateTotalCost(order);
-        content += `
-          <tr>
-            <td>${order.id}</td>
-            <td>${customerName}</td>
-            <td>${order.total} ${order.currency}</td>
-            <td>${new Date(order.date_created).toLocaleString()}</td>
-            <td>${order.status}</td>
-            <td>${profit} ${order.currency}</td>
-          </tr>
-        `;
-      });
-
-      content += `
-              </tbody>
-            </table>
-            <div class="totals">
-              <p>Total de Pedidos: ${orders.length}</p>
-              <p>Total de Ventas: ${totals.total.toFixed(2)} €</p>
-              <p>Total de Artículos: ${totals.quantity}</p>
-              <p>Total de Profit: ${totalProfit.toFixed(2)} €</p>
-            </div>
-          </body>
-        </html>
-      `;
-
-      return content;
-    }
-
-    function generateLoadingSheet(orders) {
-      const productTotals = {};
-
-      orders.forEach(order => {
-        order.line_items.forEach(item => {
-          if (!productTotals[item.name]) {
-            productTotals[item.name] = {
-              quantity: 0,
-              total: 0
-            };
-          }
-          productTotals[item.name].quantity += item.quantity;
-          productTotals[item.name].total += parseFloat(item.total);
-        });
-      });
-
-      let content = `
-        <html>
-          <head>
-            <title>Planilla de Carga</title>
-            <style>
-              body { font-family: Arial, sans-serif; }
-              table { width: 100%; border-collapse: collapse; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-            </style>
-          </head>
-          <body>
-            <h1>Planilla de Carga</h1>
-            <table>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
-
-      Object.entries(productTotals).forEach(([productName, data]) => {
-        content += `
-          <tr>
-            <td>${productName}</td>
-            <td>${data.quantity}</td>
-            <td>${data.total.toFixed(2)} €</td>
-          </tr>
-        `;
-      });
-
-      content += `
-              </tbody>
-            </table>
-          </body>
-        </html>
-      `;
-
-      return content;
-    }
-
-    function printLoadingSheet() {
-      const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
-      const selectedOrderIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.orderId);
-      
-      if (selectedOrderIds.length === 0) {
-        alert('Por favor, seleccione al menos un pedido para generar la planilla de carga.');
-        return;
-      }
-
-      const selectedOrders = allOrders.filter(order => selectedOrderIds.includes(order.id.toString()));
-      const loadingSheetContent = generateLoadingSheet(selectedOrders);
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(loadingSheetContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
-
-    function displayOrdersTable(orders) {
-      const tableBody = document.getElementById('orders-table-body');
-      tableBody.innerHTML = '';
-
-      const startIndex = (currentPage - 1) * ordersPerPage;
-      const endIndex = startIndex + ordersPerPage;
-      const displayedOrders = orders.slice(startIndex, endIndex);
-
-      displayedOrders.forEach(order => {
-        const row = document.createElement('tr');
-        const customerName = `${order.billing.first_name} ${order.billing.last_name}`;
-        const cashier = getCashierName(order);
-        const isRefunded = order.refunds && order.refunds.length > 0;
-        const refundStatus = isRefunded ? '<span style="color: red; font-weight: bold;">Reembolsado</span>' : 'No';
-        row.innerHTML = `
-          <td><input type="checkbox" class="order-checkbox" data-order-id="${order.id}"></td>
-          <td>${order.id}</td>
-          <td>${order.status}</td>
-          <td>${customerName}</td>
-          <td>${cashier.name}<br><small>${cashier.email}</small></td>
-          <td>${order.total} ${order.currency}</td>
-          <td>${new Date(order.date_created).toLocaleString()}</td>
-          <td>${refundStatus}</td>
-          <td>
-            <button class="action-button" onclick="toggleOrderDetails(${order.id})">Detalles</button>
-            <button class="action-button" onclick="calculateOrder(${order.id})">CALCULAR</button>
-          </td>
-        `;
-        if (isRefunded) {
-          row.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-        }
-        tableBody.appendChild(row);
-
-        const totalCostAndProfit = calculateTotalCost(order);
-        const detailsRow = document.createElement('tr');
-        detailsRow.innerHTML = `
-          <td colspan="9">
-            <div id="order-details-${order.id}" class="order-details" style="display: none;">
-              <h4>Detalles del Pedido</h4>
-              <p><strong>Método de Pago:</strong> ${order.payment_method_title}</p>
-              <p><strong>Dirección de Envío:</strong> ${order.shipping.address_1}, ${order.shipping.city}, ${order.shipping.country}</p>
-              <p><strong>Total de Coste:</strong> ${totalCostAndProfit.cost} ${order.currency}</p>
-              <p><strong>Profit:</strong> ${totalCostAndProfit.profit} ${order.currency}</p>
-              <p><strong>Cajero:</strong> ${cashier.name} (${cashier.email})</p>
-              <h5>Artículos:</h5>
-              <ul>
-                ${order.line_items.map(item => {
-                  const product = productsData.find(p => p.id === item.product_id);
-                  const cogCost = product ? (product.meta_data.find(meta => meta.key === 'yith_cog_cost')?.value || 'N/A') : 'N/A';
-                  const profit = cogCost !== 'N/A' ? (parseFloat(item.price) - parseFloat(cogCost)).toFixed(2) : 'N/A';
-                  return `<li>${item.name} - Cantidad: ${item.quantity}, Precio: ${item.price} ${order.currency}, YITH COG Cost: ${cogCost}, Profit: ${profit} ${order.currency}</li>`;
-                }).join('')}
-              </ul>
-            </div>
-          </td>
-        `;
-        tableBody.appendChild(detailsRow);
-      });
-
-      updatePagination(orders.length);
-      
-      document.getElementById('select-all-orders').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.order-checkbox');
-        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-      });
-    }
-
-    function printSelectedOrders() {
-      const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
-      const selectedOrderIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.orderId);
-      
-      if (selectedOrderIds.length === 0) {
-        alert('Por favor, seleccione al menos un pedido para imprimir.');
-        return;
-      }
-
-      const selectedOrders = allOrders.filter(order => selectedOrderIds.includes(order.id.toString()));
-      const printContent = generatePrintContent(selectedOrders);
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
-
-    function calculateOrder(orderId) {
-      const order = allOrders.find(o => o.id === orderId);
-      if (order) {
-        const total = parseFloat(order.total);
-        const itemCount = order.line_items.reduce((sum, item) => sum + item.quantity, 0);
-        const averageItemPrice = total / itemCount;
-        
-        alert(`Orden ${orderId}:
-        Total: ${total.toFixed(2)} €
-        Cantidad de artículos: ${itemCount}
-        Precio promedio por artículo: ${averageItemPrice.toFixed(2)} €`);
-      } else {
-        alert(`No se encontró la orden con ID ${orderId}`);
-      }
-    }
-
-    function toggleOrderDetails(orderId) {
-      const detailsElement = document.getElementById(`order-details-${orderId}`);
-      if (detailsElement.style.display === 'none') {
-        detailsElement.style.display = 'block';
-      } else {
-        detailsElement.style.display = 'none';
-      }
-    }
-
-    function applyOrderFilters() {
-      const startDate = document.getElementById('order-start-date').value;
-      const endDate = document.getElementById('order-end-date').value;
-      const idFilter = document.getElementById('order-id-filter').value.toLowerCase();
-      const statusFilter = document.getElementById('order-status-filter').value.toLowerCase();
-      const customerFilter = document.getElementById('order-customer-filter').value.toLowerCase();
-      const cashierFilter = document.getElementById('order-cashier-filter').value.toLowerCase();
-
-      const filteredOrders = allOrders.filter(order => {
-        const orderDate = order.date_created.split('T')[0];
-        const customerName = `${order.billing.first_name} ${order.billing.last_name}`.toLowerCase();
-        const cashierName = getCashierName(order).name.toLowerCase();
-
-        return (
-          (!startDate || orderDate >= startDate) &&
-          (!endDate || orderDate <= endDate) &&
-          order.id.toString().includes(idFilter) &&
-          order.status.toLowerCase().includes(statusFilter) &&
-          customerName.includes(customerFilter) &&
-          cashierName.includes(cashierFilter)
-        );
-      });
-
-      currentPage = 1;
-      displayOrdersTable(filteredOrders);
-    }
-
-    function resetOrderFilters() {
-      document.getElementById('order-start-date').value = '';
-      document.getElementById('order-end-date').value = '';
-      document.getElementById('order-id-filter').value = '';
-      document.getElementById('order-status-filter').value = '';
-      document.getElementById('order-customer-filter').value = '';
-      document.getElementById('order-cashier-filter').value = '';
-
-      currentPage = 1;
-      displayOrdersTable(allOrders);
-    }
-
-    function applyMonthFilter() {
-      const now = new Date();
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-      document.getElementById('order-start-date').value = firstDayOfMonth.toISOString().split('T')[0];
-      document.getElementById('order-end-date').value = lastDayOfMonth.toISOString().split('T')[0];
-      
-      applyOrderFilters();
-    }
-
-    function sumFilteredOrders() {
-      const visibleOrderRows = document.querySelectorAll('#orders-table-body tr:not([style*="display: none"])');
-      let sum = 0;
-
-      visibleOrderRows.forEach(row => {
-        const totalCell = row.querySelector('td:nth-child(6)');
-        if (totalCell) {
-          const total = parseFloat(totalCell.textContent.split(' ')[0]);
-          if (!isNaN(total)) {
-            sum += total;
+        function toggleConsole() {
+          const console = document.getElementById('debugConsole');
+          if (console) {
+            console.style.display = console.style.display === 'none' ? 'block' : 'none';
           }
         }
-      });
 
-      alert(`La suma total de las órdenes filtradas es: ${sum.toFixed(2)} €`);
-    }
-
-    function printTodaySalesReport() {
-      const today = getTodayDate();
-      const todayOrders = allOrders.filter(order => {
-        const orderDate = order.date_created.split('T')[0];
-        return orderDate === today;
-      });
-
-      const totalSales = todayOrders.reduce((total, order) => total + parseFloat(order.total), 0);
-      const totalItems = todayOrders.reduce((total, order) => total + order.line_items.reduce((sum, item) => sum + item.quantity, 0), 0);
-      let totalProfit = 0;
-
-      todayOrders.forEach(order => {
-        const { profit } = calculateTotalCost(order);
-        totalProfit += parseFloat(profit);
-      });
-
-      const reportContent = `
-        <html>
-          <head>
-            <title>Informe de Ventas del Día</title>
-            <style>
-              body { font-family: Arial, sans-serif; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-              .total { font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <h1>Informe de Ventas del Día: ${today}</h1>
-            <table>
-              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Profit</th></tr>
-              ${todayOrders.map(order => {
-                const { profit } = calculateTotalCost(order);
-                return `<tr>
-                  <td>${order.id}</td>
-                  <td>${order.billing.first_name} ${order.billing.last_name}</td>
-                  <td>${parseFloat(order.total).toFixed(2)} €</td>
-                  <td>${parseFloat(profit).toFixed(2)} €</td>
-                </tr>`;
-              }).join('')}
-            </table>
-            <div class="total">
-              <p>Total de Ventas: ${totalSales.toFixed(2)} €</p>
-              <p>Total de Artículos Vendidos: ${totalItems}</p>
-              <p>Total de Profit: ${totalProfit.toFixed(2)} €</p>
-            </div>
-          </body>
-        </html>
-      `;
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(reportContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
-
-    document.getElementById('sum-button').addEventListener('click', sumFilteredOrders);
-    
-    document.getElementById('today-filter').addEventListener('click', () => {
-      applyTodayFilter();
-      printTodaySalesReport();
-    });
-    document.getElementById('apply-order-filters').addEventListener('click', applyOrderFilters);
-    document.getElementById('reset-order-filters').addEventListener('click', resetOrderFilters);
-    document.getElementById('print-selected-orders').addEventListener('click', printSelectedOrders);
-    document.getElementById('generate-loading-sheet').addEventListener('click', printLoadingSheet);
-
-    async function displayOrdersList(orders) {
-      displayOrdersTable(orders);
-    }
-
-    function analyzeDatabaseRelationships() {
-      const consoleElement = document.getElementById('console');
-      consoleElement.innerHTML += "Analyzing database relationships...\n";
-
-      const relationships = [
-        "WooCommerce Products (wp_posts.post_type = 'product') -> YITH POS Products (yith_pos_products)",
-        "WooCommerce Orders (wp_posts.post_type = 'shop_order') -> YITH POS Orders (yith_pos_orders)",
-        "WooCommerce Order Items (wp_wc_order_items) -> YITH POS Order Items (yith_pos_orders)",
-        "WooCommerce Users (wp_users) -> YITH POS Customers (yith_pos_customers)",
-        "WooCommerce Product Metadata (wp_postmeta) -> YITH POS Product Data",
-        "WooCommerce Order Metadata (wp_postmeta) -> YITH POS Order Data",
-        "WooCommerce User Metadata (wp_usermeta) -> YITH POS Customer Data"
-      ];
-
-      relationships.forEach(relationship => {
-        consoleElement.innerHTML += `- ${relationship}\n`;
-      });
-
-      consoleElement.innerHTML += "\nKey Relationships:\n";
-      consoleElement.innerHTML += "- Products: wp_posts.ID = yith_pos_products.ID\n";
-      consoleElement.innerHTML += "- Orders: wp_wc_order_items.order_id = yith_pos_orders.post_id\n";
-      consoleElement.innerHTML += "- Customers: wp_users.ID = yith_pos_customers.user_id\n";
-
-      consoleElement.innerHTML += "\nAnalysis complete. These relationships ensure synchronization between WooCommerce and YITH POS for products, orders, and customers.\n";
-    }
-
-    async function fetchWooCommerceCustomers(page = 1, perPage = 100) {
-      return await fetchWooCommerceData('customers', page, perPage);
-    }
-
-    function updateTrackedUserFields(customers) {
-      const trackedFields = new Set();
-      customers.forEach(customer => {
-        Object.keys(customer).forEach(field => trackedFields.add(field));
-        if (customer.meta_data) {
-          customer.meta_data.forEach(meta => trackedFields.add(meta.key));
-        }
-      });
-      
-      const trackedUserFieldsList = document.getElementById('tracked-user-fields-list');
-      trackedUserFieldsList.innerHTML = Array.from(trackedFields).map(field => `<li>${field}</li>`).join('');
-      document.getElementById('tracked-user-fields-count').textContent = trackedFields.size;
-    }
-
-    async function updateTrackedYithFields() {
-      try {
-        const response = await fetch(`${baseUrl}yith_pos_fields`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const yithFields = await response.json();
-        
-        const trackedYithFieldsList = document.getElementById('tracked-yith-fields-list');
-        if (yithFields && yithFields.length > 0) {
-          trackedYithFieldsList.innerHTML = yithFields.map(field => `<li>${field}</li>`).join('');
-          document.getElementById('tracked-yith-fields-count').textContent = yithFields.length;
-        } else {
-          trackedYithFieldsList.innerHTML = '<li>No se encontraron campos YITH POS o no se tiene acceso a esta información.</li>';
-          document.getElementById('tracked-yith-fields-count').textContent = '0';
-        }
-      } catch (error) {
-        console.error('Error fetching YITH POS fields:', error);
-        document.getElementById('tracked-yith-fields-list').innerHTML = '<li>Error al recuperar la información de los campos YITH POS.</li>';
-        document.getElementById('tracked-yith-fields-count').textContent = '0';
-      }
-    }
-
-    function updateTrackedFields(orders) {
-      const trackedFields = new Set();
-      orders.forEach(order => {
-        Object.keys(order).forEach(field => trackedFields.add(field));
-        if (order.meta_data) {
-          order.meta_data.forEach(meta => trackedFields.add(meta.key));
-        }
-      });
-      
-      const trackedFieldsList = document.getElementById('tracked-fields-list');
-      trackedFieldsList.innerHTML = Array.from(trackedFields).map(field => `<li>${field}</li>`).join('');
-      document.getElementById('tracked-fields-count').textContent = trackedFields.size;
-    }
-
-    async function fetchSalesReport(startDate, endDate) {
-      const endpoint = `reports/sales?after=${startDate}T00:00:00&before=${endDate}T23:59:59`;
-      return await fetchWooCommerceData(endpoint);
-    }
-
-    function displaySalesReport(reportData) {
-      const reportViewer = document.createElement('div');
-      reportViewer.id = 'sales-report-viewer';
-      reportViewer.className = 'dashboard-item numbered-block';
-      reportViewer.setAttribute('data-number', '2');
-      reportViewer.style.width = '100%';
-      reportViewer.innerHTML = `
-        <h2>Reporte de Ventas</h2>
-        <pre>${JSON.stringify(reportData, null, 2)}</pre>
-      `;
-      return reportViewer;
-    }
-
-    function generateOAuthSignature(method, url, parameters) {
-      const signingKey = encodeURIComponent(consumerSecret) + '&';
-      const paramString = Object.keys(parameters).sort().map(key => 
-        `${encodeURIComponent(key)}=${encodeURIComponent(parameters[key])}`
-      ).join('&');
-      
-      const baseString = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(paramString)}`;
-      return CryptoJS.HmacSHA1(baseString, signingKey).toString(CryptoJS.enc.Base64);
-    }
-
-    async function fetchWooCommerceData(endpoint, page = 1, perPage = 100) {
-      const timestamp = Math.floor(Date.now() / 1000);
-      const nonce = CryptoJS.lib.WordArray.random(16).toString();
-
-      const parameters = {
-        oauth_consumer_key: consumerKey,
-        oauth_nonce: nonce,
-        oauth_signature_method: 'HMAC-SHA1',
-        oauth_timestamp: timestamp,
-        oauth_version: '1.0',
-        page: page,
-        per_page: perPage
-      };
-
-      const signature = generateOAuthSignature('GET', `${baseUrl}${endpoint}`, parameters);
-      parameters.oauth_signature = signature;
-
-      const authHeader = 'OAuth ' + Object.keys(parameters).map(key => 
-        `${encodeURIComponent(key)}="${encodeURIComponent(parameters[key])}"`
-      ).join(', ');
-
-      try {
-        const response = await fetch(`${baseUrl}${endpoint}?page=${page}&per_page=${perPage}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': authHeader
+        function clearConsole() {
+          const console = document.getElementById('consoleContent');
+          if (console) {
+            console.innerHTML = '';
           }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
-      } catch (error) {
-        console.error('Error:', error);
-        return null;
-      }
-    }
-
-    function displayDataCompleteness(fetchedOrders) {
-      const totalOrders = 782;
-      const percentage = (fetchedOrders / totalOrders) * 100;
-      
-      document.getElementById('fetched-orders').innerText = fetchedOrders;
-      document.getElementById('percentage').innerText = percentage.toFixed(2);
-      document.getElementById('completion-bar').style.width = percentage + '%';
-
-      if (fetchedOrders >= totalOrders) {
-        document.getElementById('loading-screen').style.display = 'none';
-      }
-    }
-
-    async function fetchAllOrders(maxPages = 50) {
-      let allOrders = [];
-      let page = 1;
-      const perPage = 100;
-
-      while (page <= maxPages) {
-        const orders = await fetchWooCommerceData('orders', page, perPage);
-        if (!orders || orders.length === 0) {
-          break;
-        }
-        allOrders = allOrders.concat(orders);
-        if (orders.length < perPage) {
-          break;
-        }
-        page++;
-        
-        displayDataCompleteness(allOrders.length);
-      }
-
-      return allOrders;
-    }
-
-    async function updateAndLoadAllOrders() {
-      const updateButton = document.getElementById('update-orders-btn');
-      updateButton.disabled = true;
-      updateButton.textContent = 'Cargando órdenes...';
-
-      allOrders = await fetchAllOrders(50);
-      productsData = await fetchWooCommerceData('products', 1, 100); // Fetch more if needed
-      categoriesData = await fetchWooCommerceData('products/categories');
-      customersData = await fetchWooCommerceCustomers();
-
-      if (allOrders && productsData && categoriesData && customersData) {
-        updateDashboard(allOrders, productsData, categoriesData);
-        updateTrackedUserFields(customersData);
-        await updateTrackedYithFields();
-        displayOrdersTable(allOrders); // Refresh the orders table
-        displayCustomersTable(customersData); // Refresh the customers table
-      } else {
-        document.getElementById('dashboard').innerHTML = '<p>Error al recuperar los datos de WooCommerce.</p>';
-      }
-
-      updateButton.disabled = false;
-      updateButton.textContent = 'Actualizar y Cargar Todas las Órdenes Posibles';
-    }
-
-    function resetFilters() {
-      document.getElementById('start-date').value = '';
-      document.getElementById('end-date').value = '';
-      document.getElementById('customer-filter').value = '';
-      document.getElementById('pos-cashier-filter').value = '';
-      updateDashboard(allOrders, productsData, categoriesData);
-    }
-
-    async function fetchAndDisplayDatabases() {
-      try {
-        const response = await fetch(`${baseUrl}database_list`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const databases = await response.json();
-        
-        const databasesList = document.getElementById('databases-list');
-        if (databases && databases.length > 0) {
-          const databasesHtml = databases.map(db => `
-            <div class="database-item">
-              <span class="connection-status ${db.connected ? 'connected' : 'disconnected'}"></span>
-              <span>${db.name}</span>
-            </div>
-          `).join('');
-          databasesList.innerHTML = databasesHtml;
-        } else {
-          databasesList.innerHTML = '<p>No se encontraron bases de datos o no se tiene acceso a esta información.</p>';
-        }
-      } catch (error) {
-        console.error('Error fetching databases:', error);
-        document.getElementById('databases-list').innerHTML = '<p>Error al recuperar la información de las bases de datos.</p>';
-      }
-    }
-
-    document.getElementById('refresh-databases').addEventListener('click', fetchAndDisplayDatabases);
-
-    async function displayDashboard() {
-      const container = document.querySelector('.container');
-
-      try {
-        document.getElementById('loading-screen').style.display = 'flex';
-
-        allOrders = await fetchAllOrders(50);
-        productsData = await fetchWooCommerceData('products');
-        categoriesData = await fetchWooCommerceData('products/categories');
-        customersData = await fetchWooCommerceCustomers();
-
-        if (allOrders && productsData && categoriesData && customersData) {
-          makeCollapsible();
-          analyzeDatabaseRelationships();
-          await updateTrackedYithFields();
-          displayCustomersTable(customersData); // Populate customers on dashboard load
-        } else {
-          document.getElementById('dashboard').innerHTML = '<p>Error al recuperar los datos de WooCommerce.</p>';
+        function toggleLoadingBar(show) {
+          let loadingOverlay = document.querySelector('.loading-overlay');
+          if (!loadingOverlay) {
+            loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+              <div class="loading-spinner"></div>
+            `;
+            document.body.appendChild(loadingOverlay);
+          }
+          loadingOverlay.style.display = show ? 'flex' : 'none';
+          document.getElementById('orderTable').classList.toggle('loading', show);
         }
 
-        document.getElementById('update-orders-btn').addEventListener('click', updateAndLoadAllOrders);
-        document.getElementById('apply-filters').addEventListener('click', () => {
-          const filteredOrders = applyFilters(allOrders);
-          updateDashboard(filteredOrders, productsData, categoriesData);
-        });
-        document.getElementById('reset-filters').addEventListener('click', resetFilters);
-        document.getElementById('today-filter').addEventListener('click', applyTodayFilter);
-        document.getElementById('month-filter').addEventListener('click', applyMonthFilter);
-        setupTabs();
-        await fetchAndDisplayDatabases(); 
-      } catch (error) {
-        console.error('Error in displayDashboard:', error);
-        container.innerHTML = '<p>Error al cargar el dashboard. Por favor, intente nuevamente más tarde.</p>';
-      } finally {
-        document.getElementById('loading-screen').style.display = 'none';
-      }
-    }
+        function showOrderModal() {
+          const modal = document.getElementById('orderModal');
+          const dateInput = document.getElementById('orderDate');
+          if (!dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+          }
+          modal.style.display = 'block';
+          document.getElementById('customerSelect').value = '';
+          document.getElementById('customerName').value = '';
+          document.getElementById('customerEmail').value = '';
+          document.getElementById('orderStatus').value = 'pending';
+          document.getElementById('orderNotes').value = '';
+          const productsList = document.getElementById('productsList');
+          productsList.innerHTML = '';
+          addProductRow();
+        }
 
-    function getTodayDate() {
-      const today = new Date();
-      return today.toISOString().split('T')[0];
-    }
+        function closeOrderModal() {
+          const modal = document.getElementById('orderModal');
+          modal.style.display = 'none';
+        }
 
-    function applyFilters(orders) {
-      const startDate = document.getElementById('start-date').value;
-      const endDate = document.getElementById('end-date').value;
-      const customerFilter = document.getElementById('customer-filter')?.value.toLowerCase() || '';
-      const posCashierFilter = document.getElementById('pos-cashier-filter')?.value.toLowerCase() || '';
-
-      return orders.filter(order => {
-        const orderCompletedDate = order.date_completed ? order.date_completed.split('T')[0] : null;
-        const customer = `${order.billing.first_name} ${order.billing.last_name}`.toLowerCase();
-        const posCashier = order.meta_data.find(meta => meta.key === 'pos_cashier')?.value.toLowerCase() || '';
-
-        return ((!startDate || orderCompletedDate >= startDate) &&
-                (!endDate || orderCompletedDate <= endDate) &&
-                (!customerFilter || customer.includes(customerFilter)) &&
-                (!posCashierFilter || posCashier.includes(posCashierFilter)) &&
-                order.status === 'completed' &&
-                orderCompletedDate !== null);
-      });
-    }
-
-    function applyTodayFilter() {
-      const today = getTodayDate();
-      document.getElementById('start-date').value = today;
-      document.getElementById('end-date').value = today;
-      const filteredOrders = applyFilters(allOrders);
-      updateDashboard(filteredOrders, productsData, categoriesData);
-    }
-
-    function displayTotalSalesChart(orders) {
-      const completedOrders = orders.filter(order => order.status === 'completed');
-      const totalSales = completedOrders.reduce((total, order) => total + parseFloat(order.total), 0);
-
-      const ctx = document.getElementById('total-sales-chart').getContext('2d');
-      
-      if (totalSalesChart) {
-        totalSalesChart.destroy();
-      }
-
-      totalSalesChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Ventas Completadas', 'Otras'],
-          datasets: [{
-            data: [totalSales, orders.reduce((total, order) => total + parseFloat(order.total), 0) - totalSales],
-            backgroundColor: ['#2ecc71', '#e74c3c']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            title: {
-              display: true,
-              text: `Total de Ventas Completadas: ${totalSales.toFixed(2)} €`
+        async function setupModalEventListeners() {
+          const modal = document.getElementById('orderModal');
+          if (!modal) return;
+          
+          modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+              closeOrderModal();
             }
-          }
-        }
-      });
-    }
-
-    function displaySalesByDateChart(orders) {
-      const salesByDate = orders.reduce((acc, order) => {
-        const date = order.date_created.split('T')[0];
-        if (!acc[date]) {
-          acc[date] = 0;
-        }
-        acc[date] += parseFloat(order.total);
-        return acc;
-      }, {});
-
-      const dates = Object.keys(salesByDate).sort();
-      const sales = dates.map(date => salesByDate[date]);
-
-      const ctx = document.getElementById('sales-by-date-chart').getContext('2d');
-      
-      if (salesByDateChart) {
-        salesByDateChart.destroy();
-      }
-
-      salesByDateChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: dates,
-          datasets: [{
-            label: 'Ventas por Fecha',
-            data: sales,
-            borderColor: '#3498db',
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            title: {
-              display: true,
-              text: 'Ventas por Fecha'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Ventas (€)'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Fecha'
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function displaySalesSummary(orders) {
-      const totalOrders = 782;
-      const fetchedOrders = orders.length;
-      const totalSales = orders.reduce((total, order) => total + parseFloat(order.total), 0);
-      const averageOrder = totalSales / fetchedOrders;
-      const totalItems = orders.reduce((total, order) => total + order.line_items.reduce((sum, item) => sum + item.quantity, 0), 0);
-
-      const summaryHtml = `
-        <p><strong>Total de Ventas (muestra):</strong> ${totalSales.toFixed(2)} €</p>
-        <p><strong>Número de Pedidos (muestra):</strong> ${fetchedOrders} de ${totalOrders}</p>
-        <p><strong>Valor Promedio de Pedido:</strong> ${averageOrder.toFixed(2)} €</p>
-        <p><strong>Total de Artículos Vendidos (muestra):</strong> ${totalItems}</p>
-      `;
-
-      document.getElementById('sales-summary').innerHTML = summaryHtml;
-
-      const ordersSummaryHtml = `
-        <p><strong>Total de Órdenes:</strong> ${totalOrders}</p>
-        <p><strong>Órdenes Procesadas (muestra):</strong> ${fetchedOrders}</p>
-        <p><strong>Porcentaje de Órdenes Mostradas:</strong> ${((fetchedOrders / totalOrders) * 100).toFixed(2)}%</p>
-      `;
-
-      document.getElementById('orders-summary').innerHTML = ordersSummaryHtml;
-    }
-
-    function displayTopProducts(orders, products) {
-      const productSales = {};
-      orders.forEach(order => {
-        order.line_items.forEach(item => {
-          if (!productSales[item.product_id]) {
-            productSales[item.product_id] = { quantity: 0, total: 0 };
-          }
-          productSales[item.product_id].quantity += item.quantity;
-          productSales[item.product_id].total += parseFloat(item.total);
-        });
-      });
-
-      const topProducts = Object.entries(productSales)
-        .sort((a, b) => b[1].total - a[1].total)
-        .slice(0, 5);
-
-      const topProductsHtml = topProducts.map(([productId, sales]) => {
-        const product = products.find(p => p.id === parseInt(productId));
-        return `
-          <p><strong>${product ? product.name : 'Producto Desconocido'}:</strong> 
-             ${sales.quantity} unidades, ${sales.total.toFixed(2)} €</p>
-        `;
-      }).join('');
-
-      document.getElementById('top-products').innerHTML = topProductsHtml;
-    }
-
-    function displaySalesByCategory(orders, products, categories) {
-      const salesByCategory = {};
-      categories.forEach(category => {
-        salesByCategory[category.id] = { name: category.name, total: 0 };
-      });
-
-      orders.forEach(order => {
-        order.line_items.forEach(item => {
-          const product = products.find(p => p.id === item.product_id);
-          if (product && product.categories) {
-            product.categories.forEach(category => {
-              if (salesByCategory[category.id]) {
-                salesByCategory[category.id].total += parseFloat(item.total);
-              }
+          });
+          
+          const modalContent = modal.querySelector('.modal-content');
+          if (modalContent) {
+            modalContent.addEventListener('click', function(e) {
+              e.stopPropagation();
             });
           }
-        });
-      });
+        }
 
-      const categoryData = Object.values(salesByCategory);
-      const ctx = document.getElementById('sales-by-category-chart').getContext('2d');
+        async function showCustomerSuggestion(phone) {
+            return;
+        }
 
-      if (salesByCategoryChart) {
-        salesByCategoryChart.destroy();
-      }
+        function useExistingCustomer(customer) {
+          document.getElementById('customerName').value = customer.first_name;
+          document.getElementById('customerEmail').value = customer.email;
+          const suggestion = document.querySelector('.customer-suggestion');
+          if (suggestion) {
+            suggestion.remove();
+          }
+          debugLog('Using existing customer:', customer);
+        }
 
-      salesByCategoryChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: categoryData.map(cat => cat.name),
-          datasets: [{
-            label: 'Ventas por Categoría',
-            data: categoryData.map(cat => cat.total),
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            title: {
-              display: true,
-              text: 'Ventas por Categoría de Producto'
+        async function fetchWooCommerceData(endpoint, method = 'GET', data = null) {
+          try {
+            const url = new URL(`${baseUrl}/${endpoint}`);
+            
+            // Add per_page=100 parameter for GET requests except specific order fetches
+            if (method === 'GET' && !endpoint.includes('orders/') && !endpoint.includes('per_page=')) {
+              url.searchParams.append('per_page', '100');
             }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Ventas (€)'
+
+            url.searchParams.append('consumer_key', consumerKey);
+            url.searchParams.append('consumer_secret', consumerSecret);
+
+            const options = {
+              method,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
               }
+            };
+
+            if (data) {
+              debugLog('Request body:', data);
+              options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(url, options);
+            if (!response.ok) {
+              const errorBody = await response.text();
+              debugLog('Response error:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorBody
+              });
+
+              let errorMessage = 'Error en la solicitud';
+              if (response.status === 400) {
+                errorMessage = 'Error en los datos enviados';
+              } else if (response.status === 403) {
+                errorMessage = 'No tiene permisos para realizar esta acción';
+              } else if (response.status === 404) {
+                errorMessage = 'Pedido no encontrado';
+              }
+              throw new Error(`${errorMessage} (${response.status}): ${errorBody}`);
+            }
+
+            const responseData = await response.json();
+            debugLog('Response data:', responseData);
+            return responseData;
+          } catch (error) {
+            debugLog('API Error:', error.message);
+            throw error;
+          }
+        }
+
+        async function fetchProducts() {
+          try {
+            const products = await fetchWooCommerceData('products?per_page=100');
+            return products;
+          } catch (error) {
+            console.error('Error al obtener productos:', error);
+            return [];
+          }
+        }
+
+        async function fetchCustomers() {
+          try {
+            const customers = await fetchWooCommerceData('customers?per_page=100');
+            customers.forEach(customer => {
+              cachedCustomers[customer.id] = customer;
+            });
+            return customers;
+          } catch (error) {
+            console.error('Error al obtener clientes:', error);
+            return [];
+          }
+        }
+
+        async function findCustomerByPhone(phone) {
+          try {
+            // Primero intentamos buscar en el caché
+            const customers = Object.values(cachedCustomers);
+            let customer = customers.find(c => 
+              c.billing?.phone === phone || 
+              c.billing?.phone?.replace(/\D/g, '') === phone.replace(/\D/g, '') ||
+              c.last_name === phone ||
+              c.last_name?.replace(/\D/g, '') === phone.replace(/\D/g, '')
+            );
+
+            // Si no encontramos en el caché, buscamos en la API
+            if (!customer) {
+              const searchResult = await fetchWooCommerceData(`customers?search=${phone}`);
+              customer = searchResult.find(c => 
+                c.billing?.phone === phone || 
+                c.billing?.phone?.replace(/\D/g, '') === phone.replace(/\D/g, '') ||
+                c.last_name === phone ||
+                c.last_name?.replace(/\D/g, '') === phone.replace(/\D/g, '')
+              );
+            }
+
+            debugLog('Customer search result:', customer ? 'success' : 'info', {phone, customer});
+            return customer;
+          } catch (error) {
+            debugLog('Error searching customer by phone:', 'error', error);
+            return null;
+          }
+        }
+
+        async function searchCustomers(searchTerm) {
+          try {
+            const customers = await fetchWooCommerceData(`customers?search=${searchTerm}`);
+            return customers;
+          } catch (error) {
+            console.error('Error buscando clientes:', error);
+            return [];
+          }
+        }
+
+        async function createOrder() {
+          try {
+            const customerSelect = document.getElementById('customerSelect');
+            const customerId = customerSelect.value;
+            if (!customerId) {
+              throw new Error('Por favor seleccione un cliente');
+            }
+            const existingCustomer = cachedCustomers[customerId];
+            let customer;
+            if (existingCustomer) {
+              customer = existingCustomer;
+              document.getElementById('customerName').value = customer.first_name;
+              document.getElementById('customerEmail').value = customer.email;
+              debugLog('Using existing customer:', customer);
+            }
+            return submitOrder();
+          } catch (error) {
+            debugLog('Error creating order:', 'error', error);
+            alert('Error: ' + error.message);
+          }
+        }
+
+        async function submitOrder() {
+          try {
+            const date = document.getElementById('orderDate').value;
+            const customerSelect = document.getElementById('customerSelect');
+            const customerId = customerSelect.value;
+            const customerName = document.getElementById('customerName').value;
+            let customerEmail = document.getElementById('customerEmail').value;
+            const orderStatus = document.getElementById('orderStatus').value;
+            const orderNotes = document.getElementById('orderNotes').value;
+            if (!customerId) {
+              throw new Error('Por favor seleccione un cliente');
+            }
+            let customer = cachedCustomers[customerId];
+            if (!customerEmail) {
+              customerEmail = generateCustomerEmail(customer.billing.phone, customerName);
+              document.getElementById('customerEmail').value = customerEmail;
+            }
+            if (!customerEmail || !customerEmail.includes('@')) {
+              throw new Error('Por favor ingrese un email válido');
+            }
+            const productRows = document.querySelectorAll('.product-row');
+            const lineItems = [];
+            for (const row of productRows) {
+              const productSelect = row.querySelector('.product-select');
+              const quantityInput = row.querySelector('.quantity-input');
+              const priceInput = row.querySelector('.price-input');
+              if (productSelect.value) {
+                lineItems.push({
+                  product_id: parseInt(productSelect.value),
+                  quantity: parseInt(quantityInput.value),
+                  price: parseFloat(priceInput.value)
+                });
+              }
+            }
+            if (!customerName) {
+              throw new Error('Por favor ingrese el nombre del cliente');
+            }
+            if (lineItems.length === 0) {
+              throw new Error('Por favor agregue al menos un producto');
+            }
+            const customerData = {
+              email: customerEmail,
+              first_name: customerName,
+              billing: {
+                first_name: customerName,
+                email: customerEmail,
+                phone: customer.billing.phone
+              }
+            };
+            if (!customer) {
+              customer = await createCustomer(customerData);
+              debugLog('Created new customer:', customer);
+            } else {
+              if (customer.email !== customerEmail || customer.first_name !== customerName) {
+                customer = await updateCustomer(customer.id, {
+                  email: customerEmail,
+                  first_name: customerName,
+                  billing: {
+                    ...customer.billing,
+                    email: customerEmail,
+                    first_name: customerName
+                  }
+                });
+                debugLog('Updated customer details:', customer);
+              }
+            }
+            const orderData = {
+              status: orderStatus,
+              customer_note: orderNotes,
+              line_items: lineItems,
+              customer_id: customer.id,
+              billing: {
+                first_name: customerName,
+                email: customerEmail,
+                phone: customer.billing.phone
+              },
+              meta_data: [{
+                key: 'fechatabla',
+                value: date
+              }]
+            };
+            const response = await fetchWooCommerceData('orders', 'POST', orderData);
+            if (response && response.id) {
+              alert('¡Pedido creado exitosamente!');
+              closeOrderModal();
+              await listOrders();
+            } else {
+              throw new Error('Error al crear el pedido');
+            }
+          } catch (error) {
+            debugLog('Error submitting order:', error);
+            alert('Error: ' + error.message);
+            throw error;
+          }
+        }
+
+        async function updateOrder(orderId, updatedData) {
+          try {
+            if (!orderId) {
+              throw new Error('ID de pedido no válido');
+            }
+            debugLog('Updating order with data:', updatedData);
+            let requestBody = {};
+            let updateType = '';
+            if (updatedData.customer_note !== undefined) {
+              requestBody = {
+                customer_note: updatedData.customer_note
+              };
+              updateType = 'note';
+              debugLog('Updating customer note:', requestBody);
+            } else if (updatedData.meta_data) {
+              requestBody = {
+                meta_data: updatedData.meta_data
+              };
+              updateType = 'meta';
+              debugLog('Updating meta_data:', requestBody);
+            } else if (updatedData.status) {
+              requestBody = {
+                status: updatedData.status
+              };
+              updateType = 'status';
+              debugLog('Updating status:', requestBody);
+            } else if (updatedData.total) {
+              const currentOrder = await fetchWooCommerceData(`orders/${orderId}`);
+              const currentTotal = parseFloat(currentOrder.total);
+              const newTotal = parseFloat(updatedData.total);
+              const adjustment = newTotal - currentTotal;
+              requestBody = {
+                fee_lines: [{
+                  name: 'Ajuste de Total',
+                  total: adjustment.toString()
+                }]
+              };
+              updateType = 'total';
+              debugLog('Updating total with fee adjustment:', requestBody);
+            }
+            const response = await fetchWooCommerceData(`orders/${orderId}`, 'PUT', requestBody);
+            if (!response || !response.id) {
+              throw new Error('Respuesta inválida del servidor');
+            }
+            const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (row) {
+              switch (updateType) {
+                case 'note':
+                  const noteCell = row.querySelector('td:nth-child(11)');
+                  if (noteCell) {
+                    noteCell.textContent = updatedData.customer_note || 'Click para agregar nota...';
+                  }
+                  break;
+                case 'status':
+                  const statusSelect = row.querySelector('select');
+                  if (statusSelect) {
+                    statusSelect.value = updatedData.status;
+                  }
+                  break;
+                case 'total':
+                  const totalCell = row.querySelector('.total-cell');
+                  if (totalCell) {
+                    totalCell.textContent = updatedData.total;
+                  }
+                  break;
+                case 'meta':
+                  if (updatedData.meta_data[0].key === 'pin') {
+                    const pinCheckbox = row.querySelector('input[type="checkbox"]');
+                    if (pinCheckbox) {
+                      pinCheckbox.checked = updatedData.meta_data[0].value === 'yes';
+                      await clearCache();
+                    }
+                  }
+                  break;
+              }
+            }
+            debugLog('Order updated successfully:', response);
+            return response;
+          } catch (error) {
+            debugLog('Error updating order:', error);
+            throw error;
+          }
+        }
+
+        async function updateOrderTotal(cell, orderId) {
+          const currentTotal = parseFloat(cell.textContent);
+          const newTotal = prompt('Ingrese el nuevo total:', currentTotal);
+          if (newTotal === null || isNaN(newTotal)) {
+            return;
+          }
+          try {
+            debugLog(`Updating total for order ${orderId} from ${currentTotal} to ${newTotal}`);
+            const response = await updateOrder(orderId, {
+              total: newTotal
+            });
+            if (response && response.id) {
+              cell.textContent = newTotal;
+              debugLog('Total updated successfully', 'success');
+            }
+          } catch (error) {
+            debugLog('Error updating total:', 'error', error);
+            alert('Error al actualizar el total: ' + error.message);
+          }
+        }
+
+        async function deleteOrder(orderId) {
+          if (confirm('¿Está seguro de que quiere eliminar este pedido?')) {
+            try {
+              await fetchWooCommerceData(`orders/${orderId}`, 'DELETE');
+              const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+              if (row) {
+                row.remove();
+              }
+              alert('¡Pedido eliminado exitosamente!');
+            } catch (error) {
+              console.error('Error al eliminar pedido:', error);
+              alert('Error al eliminar pedido. Por favor intente nuevamente.');
             }
           }
         }
-      });
-    }
 
-    function makeCollapsible() {
-      var coll = document.getElementsByClassName("collapsible");
-      for (var i = 0; i < coll.length; i++) {
-        coll[i].addEventListener("click", function() {
-          this.classList.toggle("active");
-          var content = this.nextElementSibling;
-          if (content.style.display === "block") {
-            content.style.display = "none";
+        async function getCustomerAvatar(customerId) {
+          if (!customerId) return null;
+          try {
+            const customer = await fetchWooCommerceData(`customers/${customerId}`);
+            return customer.avatar_url;
+          } catch (error) {
+            console.error('Error al obtener avatar del cliente:', error);
+            return null;
+          }
+        }
+
+        async function clearCache() {
+          cachedProducts = [];
+          cachedCustomers = {};
+          orderPositions = new Map();
+          highlightedOrders = new Map();
+          localStorage.removeItem('orderPositions');
+          localStorage.removeItem('highlightedOrders');
+          debugLog('Cache cleared automatically');
+          await listOrders();
+        }
+
+        function getCustomerTipo(customerId) {
+          try {
+            if (!customerId || !cachedCustomers[customerId]) {
+              return 'LEAD';
+            }
+            const customer = cachedCustomers[customerId];
+            if (!customer.meta_data) {
+              return 'LEAD';
+            }
+            const tipoMeta = customer.meta_data.find(meta => meta.key === 'tipo');
+            const tipo = tipoMeta ? tipoMeta.value.toUpperCase() : 'LEAD';
+            debugLog('Customer tipo:', {
+              customerId,
+              tipo,
+              metaData: customer.meta_data
+            });
+            return tipo;
+          } catch (error) {
+            debugLog('Error in getCustomerTipo:', 'error', error);
+            return 'LEAD';
+          }
+        }
+
+        async function updateCustomerTipo(customerId, tipo) {
+          try {
+            debugLog(`Updating customer ${customerId} type to ${tipo}`);
+            if (!customerId) {
+              throw new Error('Invalid customer ID');
+            }
+            const normalizedTipo = tipo.trim();
+            const updateData = {
+              meta_data: [{
+                key: 'tipo',
+                value: normalizedTipo
+              }]
+            };
+            const response = await fetchWooCommerceData(`customers/${customerId}`, 'PUT', updateData);
+            if (!response || !response.id) {
+              throw new Error('Invalid response from server');
+            }
+            if (cachedCustomers[customerId]) {
+              const typeMetaIndex = cachedCustomers[customerId].meta_data?.findIndex(meta => meta.key === 'tipo');
+              if (typeMetaIndex !== -1) {
+                cachedCustomers[customerId].meta_data[typeMetaIndex].value = normalizedTipo;
+              } else {
+                if (!cachedCustomers[customerId].meta_data) {
+                  cachedCustomers[customerId].meta_data = [];
+                }
+                cachedCustomers[customerId].meta_data.push({
+                  key: 'tipo',
+                  value: normalizedTipo
+                });
+              }
+            }
+            debugLog('Customer type updated successfully:', response);
+            return response;
+          } catch (error) {
+            debugLog('Error updating customer type:', 'error', error);
+            throw new Error(`Failed to update customer type: ${error.message}`);
+          }
+        }
+
+        async function loadOrderPositions() {
+          try {
+            const savedPositions = localStorage.getItem('orderPositions');
+            if (savedPositions) {
+              orderPositions = new Map(JSON.parse(savedPositions));
+            }
+          } catch (error) {
+            console.error('Error loading order positions:', error);
+            orderPositions = new Map();
+          }
+        }
+
+        function saveOrderPositions() {
+          try {
+            const tbody = document.querySelector('#orderTable tbody');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
+            orderPositions.clear();
+            Array.from(rows).forEach((row, index) => {
+              const orderId = row.dataset.orderId;
+              if (orderId) {
+                orderPositions.set(orderId, index);
+              }
+            });
+            localStorage.setItem('orderPositions', JSON.stringify(Array.from(orderPositions)));
+            debugLog('Row positions saved successfully', 'success', {
+              positions: Array.from(orderPositions.entries())
+            });
+          } catch (error) {
+            debugLog('Error saving row positions:', 'error', error);
+            console.error('Error saving row positions:', error);
+          }
+        }
+
+        async function initializeDragAndDrop() {
+          const tbody = document.querySelector('#orderTable tbody');
+          if (!tbody) return;
+          const rows = tbody.getElementsByTagName('tr');
+          Array.from(rows).forEach((row, index) => {
+            const orderId = row.dataset.orderId;
+            if (orderId && !orderPositions.has(orderId)) {
+              orderPositions.set(orderId, index);
+            }
+            row.draggable = true;
+            row.addEventListener('dragstart', e => {
+              draggedRow = row;
+              row.classList.add('dragging');
+              e.dataTransfer.setData('text/plain', row.dataset.orderId);
+            });
+            row.addEventListener('dragend', () => {
+              row.classList.remove('dragging');
+              draggedRow = null;
+              saveOrderPositions();
+            });
+            row.addEventListener('dragover', e => {
+              e.preventDefault();
+              if (!draggedRow || draggedRow === row) return;
+              const rect = row.getBoundingClientRect();
+              const midpoint = rect.top + rect.height / 2;
+              if (e.clientY < midpoint) {
+                row.parentNode.insertBefore(draggedRow, row);
+              } else {
+                row.parentNode.insertBefore(draggedRow, row.nextSibling);
+              }
+            });
+          });
+        }
+
+        async function loadHighlights() {
+          try {
+            const savedHighlights = localStorage.getItem('highlightedOrders');
+            if (savedHighlights) {
+              highlightedOrders = new Map(JSON.parse(savedHighlights));
+            }
+            document.querySelectorAll('#orderTable tbody tr').forEach(row => {
+              const orderId = row.dataset.orderId;
+              if (highlightedOrders.has(orderId)) {
+                const highlightType = highlightedOrders.get(orderId);
+                row.classList.add(`highlighted-order-${highlightType}`);
+              }
+            });
+          } catch (error) {
+            console.error('Error loading highlights:', error);
+          }
+        }
+
+        function saveHighlights() {
+          try {
+            localStorage.setItem('highlightedOrders', JSON.stringify([...highlightedOrders]));
+          } catch (error) {
+            console.error('Error saving highlights:', error);
+          }
+        }
+
+        async function initializeTotalCellSelection() {
+          document.addEventListener('keydown', e => {
+            if (e.key === 'Control') {
+              isCtrlPressed = true;
+            }
+          });
+          document.addEventListener('keyup', e => {
+            if (e.key === 'Control') {
+              isCtrlPressed = false;
+            }
+          });
+          document.addEventListener('mouseup', () => {
+            isMouseDown = false;
+          });
+          updateTotalSum();
+        }
+
+        function handleTotalCellMouseDown(cell, event) {
+          isMouseDown = true;
+          toggleTotalCellSelection(cell, event);
+        }
+
+        function handleTotalCellMouseOver(cell) {
+          if (isMouseDown || isCtrlPressed) {
+            toggleTotalCellSelection(cell);
+          }
+        }
+
+        function handleTotalCellMouseUp() {
+          isMouseDown = false;
+        }
+
+        function toggleTotalCellSelection(cell, event) {
+          if (!isCtrlPressed && !isMouseDown && event) {
+            selectedTotals.clear();
+            document.querySelectorAll('.total-cell').forEach(cell => {
+              cell.classList.remove('selected');
+            });
+          }
+          const total = parseFloat(cell.textContent);
+          if (!isNaN(total)) {
+            if (selectedTotals.has(total)) {
+              selectedTotals.delete(total);
+              cell.classList.remove('selected');
+            } else {
+              selectedTotals.add(total);
+              cell.classList.add('selected');
+            }
+            updateTotalSum();
+          }
+        }
+
+        function updateTotalSum() {
+          const sum = Array.from(selectedTotals).reduce((acc, curr) => acc + curr, 0);
+          let sumDisplay = document.getElementById('totalSumDisplay');
+          if (!sumDisplay) {
+            sumDisplay = document.createElement('div');
+            sumDisplay.id = 'totalSumDisplay';
+            sumDisplay.style.position = 'fixed';
+            sumDisplay.style.bottom = '20px';
+            sumDisplay.style.left = '20px';
+            sumDisplay.style.padding = '10px';
+            sumDisplay.style.background = '#4CAF50';
+            sumDisplay.style.color = 'white';
+            sumDisplay.style.borderRadius = '5px';
+            sumDisplay.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            sumDisplay.style.zIndex = '1000';
+            sumDisplay.style.display = 'flex';
+            sumDisplay.style.alignItems = 'center';
+            sumDisplay.style.gap = '10px';
+            document.body.appendChild(sumDisplay);
+          }
+          if (selectedTotals.size > 0) {
+            sumDisplay.innerHTML = `
+                    <span>Total Seleccionado: $${sum.toFixed(2)}</span>
+                    <button onclick="closeTotalSum()" 
+                            style="background: transparent; 
+                                   border: none;
+                                   color: white;
+                                   cursor: pointer;
+                                   padding: 5px;
+                                   font-size: 16px;
+                                   display: flex;
+                                   align-items: center;
+                                   justify-content: center;
+                                   margin-left: 10px;">
+                        ✖
+                    </button>
+                `;
+            sumDisplay.style.display = 'flex';
           } else {
-            content.style.display = "block";
-            loadContent(content);
+            sumDisplay.style.display = 'none';
+          }
+        }
+
+        function closeTotalSum() {
+          const sumDisplay = document.getElementById('totalSumDisplay');
+          if (sumDisplay) {
+            sumDisplay.style.display = 'none';
+          }
+          selectedTotals.clear();
+          document.querySelectorAll('.total-cell').forEach(cell => {
+            cell.classList.remove('selected');
+          });
+        }
+
+        async function createNewOrder() {
+          await showOrderModal();
+        }
+
+        async function createCustomer(customerData) {
+          try {
+            const response = await fetchWooCommerceData('customers', 'POST', customerData);
+            return response;
+          } catch (error) {
+            console.error('Error creating customer:', error);
+            throw error;
+          }
+        }
+
+        function setupProductHandlers() {
+          document.querySelectorAll('.product-select').forEach(select => {
+            select.addEventListener('change', function () {
+              const row = this.closest('.product-row');
+              const priceInput = row.querySelector('.price-input');
+              const selectedOption = this.selectedOptions[0];
+              if (selectedOption && selectedOption.dataset.price) {
+                priceInput.value = selectedOption.dataset.price;
+              } else {
+                priceInput.value = '';
+              }
+              updateRowPrice(row);
+            });
+          });
+          document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('input', function () {
+              const row = this.closest('.product-row');
+              updateRowPrice(row);
+            });
+          });
+          document.querySelectorAll('.price-input').forEach(input => {
+            input.addEventListener('input', function () {
+              const row = this.closest('.product-row');
+              updateRowPrice(row);
+            });
+          });
+        }
+
+        function addProductRow() {
+          const productsList = document.getElementById('productsList');
+          const newRow = document.createElement('div');
+          newRow.className = 'product-row';
+          newRow.style.display = 'flex';
+          newRow.style.gap = '10px';
+          newRow.style.marginBottom = '10px';
+          newRow.innerHTML = `
+                <select class="product-select" style="flex: 2; padding: 8px; border-radius: 4px;">
+                    <option value="">Seleccionar producto...</option>
+                    ${cachedProducts.map(p => `<option value="${p.id}" data-price="${p.price}">${p.name}</option>`).join('')}
+                </select>
+                <input type="number" class="quantity-input" placeholder="Cantidad" min="1" value="1" style="flex: 1; padding: 8px; border-radius: 4px;">
+                <input type="number" class="price-input" placeholder="Precio" step="0.01" style="flex: 1; padding: 8px; border-radius: 4px;">
+                <span class="row-total" style="flex: 1; padding: 8px;">0.00</span>
+                <button onclick="removeProductRow(this)" style="
+                    background: var(--accent-color);
+                    border: none;
+                    border-radius: 4px;
+                    padding: 8px;
+                    color: white;
+                    cursor: pointer;
+                ">×</button>
+            `;
+          productsList.appendChild(newRow);
+          const productSelect = newRow.querySelector('.product-select');
+          const quantityInput = newRow.querySelector('.quantity-input');
+          const priceInput = newRow.querySelector('.price-input');
+          productSelect.addEventListener('change', () => updateRowPrice(newRow));
+          quantityInput.addEventListener('input', () => updateRowPrice(newRow));
+          priceInput.addEventListener('input', () => updateRowPrice(newRow));
+          setupProductHandlers();
+        }
+
+        function removeProductRow(button) {
+          const row = button.closest('.product-row');
+          row.remove();
+        }
+
+        function updateRowPrice(row) {
+          const productSelect = row.querySelector('.product-select');
+          const quantityInput = row.querySelector('.quantity-input');
+          const priceInput = row.querySelector('.price-input');
+          const rowTotal = row.querySelector('.row-total');
+          const selectedOption = productSelect.selectedOptions[0];
+          if (selectedOption && !priceInput.value) {
+            priceInput.value = selectedOption.dataset.price || 0;
+          }
+          const quantity = parseFloat(quantityInput.value) || 0;
+          const price = parseFloat(priceInput.value) || 0;
+          const total = quantity * price;
+          rowTotal.textContent = total.toFixed(2);
+        }
+
+        function getLastFourDigits(phone) {
+          if (!phone) return '';
+          const cleaned = phone.replace(/\D/g, '');
+          return cleaned.slice(-4);
+        }
+
+        async function listOrders() {
+          try {
+            toggleLoadingBar(true);
+            document.getElementById('orderTable').classList.add('loading');
+            debugLog('Loading orders...');
+
+            cachedProducts = [];
+            cachedCustomers = {};
+            orderPositions = new Map();
+            highlightedOrders = new Map();
+
+            if (Object.keys(cachedCustomers).length === 0) {
+              await fetchCustomers();
+            }
+
+            const yearFilter = document.getElementById('yearFilter');
+            if (yearFilter && yearFilter.options.length <= 1) {
+              initializeYearFilter();
+            }
+
+            const monthFilter = document.getElementById('monthFilter').value;
+            const yearFilterValue = document.getElementById('yearFilter').value;
+            const tipoFilter = document.getElementById('tipoFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const productFilter = document.getElementById('productFilter').value;
+            const pinFilter = document.getElementById('pinFilter').checked;
+            const searchFilter = document.getElementById('orderSearch').value;
+
+            // Fetch all orders using pagination
+            let allOrders = [];
+            let page = 1;
+            let hasMore = true;
+
+            while (hasMore) {
+              const orders = await fetchWooCommerceData(`orders?per_page=100&page=${page}`);
+              if (orders && orders.length > 0) {
+                allOrders = allOrders.concat(orders);
+                page++;
+              } else {
+                hasMore = false;
+              }
+            }
+
+            debugLog(`Fetched ${allOrders.length} orders total`);
+
+            if (cachedProducts.length === 0) {
+              cachedProducts = await fetchProducts();
+              debugLog(`Cached ${cachedProducts.length} products`);
+            }
+
+            const productFilterElement = document.getElementById('productFilter');
+            if (productFilterElement && productFilterElement.options.length <= 1) {
+              cachedProducts.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = product.name;
+                productFilterElement.appendChild(option);
+              });
+            }
+
+            const tbody = document.querySelector('#orderTable tbody');
+            tbody.innerHTML = '';
+            const displayedOrderIds = new Set();
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth() + 1;
+            const currentYear = currentDate.getFullYear();
+
+            let filteredOrders = allOrders.filter(order => {
+              if (displayedOrderIds.has(order.id)) {
+                return false;
+              }
+
+              const fechaTabla = order.meta_data.find(meta => meta.key === 'fechatabla')?.value;
+              
+              // If there's no fechatabla and we're filtering for current month/year, include the order
+              if (!fechaTabla) {
+                const orderDate = new Date(order.date_created);
+                const orderMonth = orderDate.getMonth() + 1;
+                const orderYear = orderDate.getFullYear();
+                
+                // Only include orders without fechatabla if we're looking at their creation month/year
+                if ((!monthFilter || orderMonth === parseInt(monthFilter)) &&
+                    (!yearFilterValue || orderYear === parseInt(yearFilterValue))) {
+                  displayedOrderIds.add(order.id);
+                  return true;
+                }
+                return false;
+              }
+
+              // Parse fechaTabla to get month and year
+              const fechaDate = new Date(fechaTabla);
+              const fechaMonth = fechaDate.getMonth() + 1;
+              const fechaYear = fechaDate.getFullYear();
+
+              // Apply month and year filters
+              if (monthFilter && yearFilterValue) {
+                if (fechaMonth !== parseInt(monthFilter) || fechaYear !== parseInt(yearFilterValue)) {
+                  return false;
+                }
+              } else if (monthFilter) {
+                if (fechaMonth !== parseInt(monthFilter)) {
+                  return false;
+                }
+              } else if (yearFilterValue) {
+                if (fechaYear !== parseInt(yearFilterValue)) {
+                  return false;
+                }
+              }
+
+              if (statusFilter && order.status !== statusFilter) {
+                return false;
+              }
+
+              if (tipoFilter) {
+                const customerType = getCustomerTipo(order.customer_id);
+                if (customerType !== tipoFilter) {
+                  return false;
+                }
+              }
+
+              if (productFilter && !order.line_items.some(item => item.product_id.toString() === productFilter)) {
+                return false;
+              }
+
+              if (pinFilter) {
+                const pinMeta = order.meta_data.find(meta => meta.key === 'pin');
+                if (!pinMeta || pinMeta.value !== 'yes') {
+                  return false;
+                }
+              }
+
+              if (searchFilter) {
+                const searchTerms = searchFilter.toLowerCase().trim().split(' ');
+                let matchesSearch = false;
+                for (const term of searchTerms) {
+                  if (order.id.toString().includes(term) ||
+                      order.billing.first_name.toLowerCase().includes(term) ||
+                      order.billing.last_name.toLowerCase().includes(term) ||
+                      order.billing.phone.replace(/\D/g, '').includes(term) ||
+                      order.line_items.some(item => item.name.toLowerCase().includes(term))) {
+                    matchesSearch = true;
+                    break;
+                  }
+                }
+                if (!matchesSearch) {
+                  return false;
+                }
+              }
+
+              displayedOrderIds.add(order.id);
+              return true;
+            });
+
+            for (const [index, order] of filteredOrders.entries()) {
+              const tr = document.createElement('tr');
+              tr.dataset.orderId = order.id;
+              if (isLastOrderOfDay(filteredOrders, index)) {
+                tr.classList.add('last-order-of-day');
+              }
+              tr.innerHTML = `
+                <td onclick="makeOrderDateEditable(this, ${order.id})">${order.meta_data.find(meta => meta.key === 'fechatabla')?.value || ''}</td>
+                <td>${order.id}</td>
+                <td style="display: none;">${order.date_created}</td>
+                <td>
+                  <img src="${(await getCustomerAvatar(order.customer_id)) || 'path/to/default/avatar.png'}" 
+                       alt="Customer Avatar" 
+                       width="40" 
+                       height="40"
+                       onclick="openAvatarModal(${order.customer_id})"
+                       style="cursor: pointer;">
+                </td>
+                <td>${order.billing.first_name} ${order.billing.last_name}</td>
+                <td>${getLastFourDigits(order.billing.phone)}</td>
+                <td onclick="makeTypeEditable(this, ${order.id}, ${order.customer_id})" 
+                    style="background-color: ${getCustomerTypeDetails(getCustomerTipo(order.customer_id)).color}; cursor: pointer;">
+                  ${getCustomerTypeDetails(getCustomerTipo(order.customer_id)).emoji} 
+                  ${getCustomerTipo(order.customer_id)}
+                </td>
+                <td>${order.line_items.map(item => item.name).join(', ')}</td>
+                <td class="total-cell" 
+                    onmousedown="handleTotalCellMouseDown(this, event)"
+                    onmouseover="handleTotalCellMouseOver(this)"
+                    onmouseup="handleTotalCellMouseUp()"
+                    ondblclick="updateOrderTotal(this, ${order.id})">${order.total}</td>
+                <td style="background-color: ${getStatusDetails(order.status).color}">
+                  <select onchange="updateOrder(${order.id}, {status: this.value})">
+                    ${Object.entries(statusMapping).map(([label, value]) => `
+                      <option value="${value}" ${order.status === value ? 'selected' : ''}>
+                        ${getStatusDetails(value).emoji} ${label}
+                      </option>
+                    `).join('')}
+                  </select>
+                </td>
+                <td onclick="makeNoteEditable(this, ${order.id})">${order.customer_note || 'Click para agregar nota...'}</td>
+                <td>
+                  <button onclick="deleteOrder(${order.id})" style="color: red;">❌</button>
+                </td>
+                <td>
+                  <input type="checkbox" 
+                         ${order.meta_data.find(meta => meta.key === 'pin' && meta.value === 'yes') ? 'checked' : ''}
+                         onchange="updateOrder(${order.id}, {meta_data: [{key: 'pin', value: this.checked ? 'yes' : 'no'}]})">
+                </td>
+              `;
+              tbody.appendChild(tr);
+            }
+            await initializeDragAndDrop();
+            await loadHighlights();
+            debugLog('Orders loaded successfully');
+          } catch (error) {
+            debugLog(`Error loading orders: ${error.message}`, 'error');
+            alert('Error al cargar los pedidos: ' + error.message);
+          } finally {
+            toggleLoadingBar(false);
+            document.getElementById('orderTable').classList.remove('loading');
+          }
+        }
+
+        function isLastOrderOfDay(orders, currentIndex) {
+          const currentOrder = orders[currentIndex];
+          const nextOrder = orders[currentIndex + 1];
+          const currentDate = currentOrder.meta_data.find(meta => meta.key === 'fechatabla')?.value;
+          const nextDate = nextOrder?.meta_data.find(meta => meta.key === 'fechatabla')?.value;
+          return !nextOrder || currentDate !== nextDate;
+        }
+
+        function sortTableByColumn(columnName, columnIndex) {
+          debugLog(`Sorting by ${columnName} (column ${columnIndex})`);
+          const table = document.getElementById('orderTable');
+          const tbody = table.querySelector('tbody');
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          if (columnName === 'Estado') {
+            const statusFilter = document.getElementById('statusFilter');
+            if (currentSortColumn === columnIndex) {
+              statusFilter.value = '';
+            } else {
+              const firstRow = rows.find(row => row.style.display !== 'none');
+              if (firstRow) {
+                const statusSelect = firstRow.querySelector('select');
+                if (statusSelect) {
+                  statusFilter.value = statusSelect.value;
+                }
+              }
+            }
+            listOrders();
+            return;
+          }
+          if (currentSortColumn === columnIndex) {
+            currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+          } else {
+            currentSortDirection = 'asc';
+            currentSortColumn = columnIndex;
+          }
+          table.querySelectorAll('th').forEach(th => {
+            th.removeAttribute('data-sort');
+            const indicator = th.querySelector('.sort-indicator');
+            if (indicator) {
+              indicator.innerHTML = '';
+            }
+          });
+          const th = table.querySelector(`th:nth-child(${columnIndex + 1})`);
+          if (th) {
+            th.setAttribute('data-sort', currentSortDirection);
+            const indicator = th.querySelector('.sort-indicator');
+            if (indicator) {
+              indicator.innerHTML = currentSortDirection === 'asc' ? '▼' : '▲';
+            }
+          }
+          const sortedRows = rows.sort((a, b) => {
+            const aCol = a.querySelector(`td:nth-child(${columnIndex + 1})`);
+            const bCol = b.querySelector(`td:nth-child(${columnIndex + 1})`);
+            if (!aCol || !bCol) return 0;
+            let aVal = aCol.textContent.trim();
+            let bVal = bCol.textContent.trim();
+            if (!isNaN(aVal) && !isNaN(bVal)) {
+              aVal = parseFloat(aVal);
+              bVal = parseFloat(bVal);
+            }
+            if (columnName === 'Fecha Tabla') {
+              aVal = new Date(aVal);
+              bVal = new Date(bVal);
+            }
+            if (aVal < bVal) return currentSortDirection === 'asc' ? -1 : 1;
+            if (aVal > bVal) return currentSortDirection === 'asc' ? 1 : -1;
+            return 0;
+          });
+          tbody.innerHTML = '';
+          sortedRows.forEach(row => tbody.appendChild(row));
+          debugLog(`Sorted table by ${columnName} ${currentSortDirection}`);
+        }
+
+        function calculateTotals() {
+          try {
+            let totalsByStatus = {};
+            let totalsByCustomerType = {};
+            let totalOrders = 0;
+            let totalAmount = 0;
+            const rows = document.querySelectorAll('#orderTable tbody tr');
+            rows.forEach(row => {
+              const statusSelect = row.querySelector('select');
+              const status = statusSelect ? statusSelect.value : '';
+              const totalCell = row.querySelector('.total-cell');
+              const amount = parseFloat(totalCell ? totalCell.textContent : '0');
+              const typeCell = row.querySelector('td:nth-child(7)');
+              const customerType = typeCell ? typeCell.textContent : 'N/A';
+              if (status) {
+                totalsByStatus[status] = totalsByStatus[status] || {
+                  count: 0,
+                  amount: 0
+                };
+                totalsByStatus[status].count++;
+                totalsByStatus[status].amount += amount;
+              }
+              if (customerType) {
+                totalsByCustomerType[customerType] = totalsByCustomerType[customerType] || {
+                  count: 0,
+                  amount: 0
+                };
+                totalsByCustomerType[customerType].count++;
+                totalsByCustomerType[customerType].amount += amount;
+              }
+              totalOrders++;
+              totalAmount += amount;
+            });
+            let modal = document.createElement('div');
+            modal.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                `;
+            let content = `
+                    <h3 style="margin-top: 0;">Resumen de Pedidos</h3>
+                    <div style="margin-bottom: 20px;">
+                        <strong>Total de Pedidos:</strong> ${totalOrders}<br>
+                        <strong>Monto Total:</strong> $${totalAmount.toFixed(2)}
+                    </div>
+                    
+                    <h4>Por Estado:</h4>
+                    <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+                        <tr>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Estado</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Cantidad</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Total</th>
+                        </tr>
+                        ${Object.entries(totalsByStatus).map(([status, data]) => `
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;">${status}</td>
+                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #eee;">${data.count}</td>
+                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #eee;">$${data.amount.toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                    
+                    <h4>Por Tipo de Cliente:</h4>
+                    <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+                        <tr>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Tipo</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Cantidad</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd;">Total</th>
+                        </tr>
+                        ${Object.entries(totalsByCustomerType).map(([type, data]) => `
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;">${type}</td>
+                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #eee;">${data.count}</td>
+                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #eee;">$${data.amount.toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                    
+                    <button onclick="this.parentElement.remove()" style="
+                        background: var(--primary-color);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        float: right;
+                    ">Cerrar</button>
+                `;
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
+            debugLog('Totals calculated successfully', 'success', {
+              totalOrders,
+              totalAmount,
+              totalsByStatus,
+              totalsByCustomerType
+            });
+          } catch (error) {
+            debugLog('Error calculating totals:', 'error', error);
+            alert('Error al calcular totales: ' + error.message);
+          }
+        }
+
+        function initializeYearFilter() {
+          const yearFilter = document.getElementById('yearFilter');
+          const currentYear = new Date().getFullYear();
+          yearFilter.innerHTML = '<option value="">Todos los años</option>';
+          for (let year = currentYear; year >= currentYear - 4; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearFilter.appendChild(option);
+          }
+          yearFilter.value = currentYear;
+        }
+
+        async function searchCustomer() {
+          const customerSelect = document.getElementById('customerSelect');
+          if (!customerSelect) return;
+          const customerId = customerSelect.value;
+          if (customerId) {
+            const customer = cachedCustomers[customerId];
+            if (customer) {
+              document.getElementById('customerName').value = customer.first_name;
+              document.getElementById('customerEmail').value = customer.email;
+            } else {
+              document.getElementById('customerName').value = '';
+              document.getElementById('customerEmail').value = '';
+            }
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+          try {
+            cachedProducts = [];
+            cachedCustomers = {};
+            initializeYearFilter();
+            const monthFilter = document.getElementById('monthFilter');
+            const currentMonth = new Date().getMonth() + 1;
+            monthFilter.value = currentMonth;
+            await clearCache();
+            debugLog('Initial orders loaded successfully');
+            document.getElementById('monthFilter').addEventListener('change', applyFilters);
+            document.getElementById('yearFilter').addEventListener('change', applyFilters);
+            document.getElementById('tipoFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('productFilter').addEventListener('change', applyFilters);
+            document.getElementById('pinFilter').addEventListener('change', applyFilters);
+            document.getElementById('orderSearch').addEventListener('input', applyFilters);
+
+            const customerSelect = document.getElementById('customerSelect');
+            if (customerSelect) {
+                customerSelect.addEventListener('change', function() {
+                    const customerId = this.value;
+                    const customer = cachedCustomers[customerId];
+                    if (customer) {
+                        document.getElementById('customerName').value = customer.first_name;
+                        document.getElementById('customerEmail').value = customer.email;
+                    } else {
+                        document.getElementById('customerName').value = '';
+                        document.getElementById('customerEmail').value = '';
+                    }
+                });
+                customerSelect.innerHTML = '<option value="">Seleccionar cliente...</option>';
+                Object.keys(cachedCustomers).forEach(customerId => {
+                  const customer = cachedCustomers[customerId];
+                  const option = document.createElement('option');
+                  option.value = customerId;
+                  option.textContent = `${customer.first_name} ${customer.last_name} - ${customer.billing.phone}`;
+                  customerSelect.appendChild(option);
+                });
+            }
+            
+            // Add setupModalEventListeners call here so it's done once at page load
+            await setupModalEventListeners();
+          } catch (error) {
+            debugLog('Error loading initial orders:', 'error', error);
           }
         });
-      }
-    }
 
-    function loadContent(contentElement) {
-      if (contentElement.dataset.loaded) return;
-      
-      var blockNumber = contentElement.parentElement.getAttribute('data-number');
-      switch(blockNumber) {
-        case "2":
-          fetchAndDisplaySalesReport(contentElement);
-          break;
-        case "4":
-          displayTotalSalesChart(allOrders);
-          break;
-        case "6":
-          displayOrdersTable(allOrders);
-          break;
-        case "7":
-          updateTrackedFields(allOrders);
-          break;
-        case "10":
-          displaySalesByDateChart(allOrders);
-          break;
-        case "11":
-          displaySalesSummary(allOrders);
-          break;
-        case "13":
-          displayTopProducts(allOrders, productsData);
-          break;
-        case "14":
-          displaySalesByCategory(allOrders, productsData, categoriesData);
-          break;
-        case "15":
-          updateTrackedUserFields(customersData);
-          break;
-        case "18":
-          displayCustomersTable(customersData);
-          break;
-        case "17":
-          updateTrackedYithFields();
-          break;
-      }
-      
-      contentElement.dataset.loaded = true;
-    }
+        function getStatusDetails(status) {
+          const statuses = {
+            'cancelled': {
+              emoji: '❌',
+              color: '#FFE0E0',
+              label: 'CANCELADO'
+            },
+            'on-hold': {
+              emoji: '🎫',
+              color: '#E0F0FF',
+              label: 'TICKET'
+            },
+            'pending': {
+              emoji: '⏳',
+              color: '#FFF0E0',
+              label: 'LLAMAR'
+            },
+            'processing': {
+              emoji: '⚡',
+              color: '#E0FFE0',
+              label: 'TERMINAR'
+            },
+            'failed': {
+              emoji: '💸',
+              color: '#FFE0E0',
+              label: 'DEBE'
+            },
+            'completed': {
+              emoji: '✅',
+              color: '#E0FFE0',
+              label: 'PAGO'
+            }
+          };
+          return statuses[status] || {
+            emoji: '❓',
+            color: '#FFFFFF',
+            label: status.toUpperCase()
+          };
+        }
 
-    async function fetchAndDisplaySalesReport(contentElement) {
-      const today = getTodayDate();
-      const salesReport = await fetchSalesReport(today, today);
-      contentElement.innerHTML = `<pre>${JSON.stringify(salesReport, null, 2)}</pre>`;
-    }
+        function getCustomerTypeDetails(type) {
+          const types = {
+            'LEAD': {
+              emoji: '🎯',
+              color: '#FFE0E0',
+              label: 'PROSPECTO'
+            },
+            'RIDER': {
+              emoji: '🛵',
+              color: '#E0F0FF',
+              label: 'REPARTIDOR'
+            },
+            'CLIENTE': {
+              emoji: '👤',
+              color: '#E0FFE0',
+              label: 'CLIENTE'
+            },
+            'FIJO': {
+              emoji: '⭐',
+              color: '#FFF0E0',
+              label: 'FIJO'
+            },
+            'WEB': {
+              emoji: '🌐',
+              color: '#F0E0FF',
+              label: 'WEB'
+            }
+          };
+          return types[type] || {
+            emoji: '❓',
+            color: '#FFFFFF',
+            label: type || 'DESCONOCIDO'
+          };
+        }
 
-    document.getElementById('prev-page').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        displayOrdersTable(allOrders);
-      }
-    });
+        async function makeNoteEditable(element, orderId) {
+          if (element.querySelector('textarea')) return;
+          try {
+            const currentNote = element.textContent;
+            const textarea = document.createElement('textarea');
+            textarea.value = currentNote;
+            textarea.style.width = '100%';
+            textarea.style.padding = '5px';
+            textarea.style.borderRadius = '4px';
+            textarea.style.border = '1px solid #ddd';
+            textarea.style.resize = 'vertical';
+            textarea.style.minHeight = '60px';
+            const originalContent = element.innerHTML;
+            textarea.addEventListener('blur', async () => {
+              try {
+                if (textarea.value !== currentNote) {
+                  await updateOrder(orderId, {
+                    customer_note: textarea.value
+                  });
+                  element.textContent = textarea.value || 'Click para agregar nota...';
+                } else {
+                  element.innerHTML = originalContent;
+                }
+              } catch (error) {
+                debugLog('Error updating note:', 'error', error);
+                element.innerHTML = originalContent;
+                alert('Error al actualizar la nota: ' + error.message);
+              }
+            });
+            textarea.addEventListener('keydown', e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                textarea.blur();
+              }
+              if (e.key === 'Escape') {
+                element.innerHTML = originalContent;
+              }
+            });
+            element.innerHTML = '';
+            element.appendChild(textarea);
+            textarea.focus();
+          } catch (error) {
+            debugLog('Error in makeNoteEditable:', 'error', error);
+            alert('Error al editar la nota: ' + error.message);
+          }
+        }
 
-    document.getElementById('next-page').addEventListener('click', () => {
-      const totalPages = Math.ceil(allOrders.length / ordersPerPage);
-      if (currentPage < totalPages) {
-        currentPage++;
-        displayOrdersTable(allOrders);
-      }
-    });
+        function makeOrderDateEditable(cell, orderId) {
+          if (cell.querySelector('input')) return;
+          const currentDate = cell.textContent;
+          const input = document.createElement('input');
+          input.type = 'date';
+          input.value = currentDate;
+          input.style.width = '100%';
+          input.style.padding = '5px';
+          input.style.borderRadius = '4px';
+          input.style.border = '1px solid #ddd';
+          const originalContent = cell.innerHTML;
+          input.addEventListener('blur', async () => {
+            try {
+              if (input.value !== currentDate) {
+                await updateOrder(orderId, {
+                  meta_data: [{
+                    key: 'fechatabla',
+                    value: input.value
+                  }]
+                });
+                cell.textContent = input.value;
+              } else {
+                cell.innerHTML = originalContent;
+              }
+            } catch (error) {
+              debugLog('Error updating order date:', 'error', error);
+              cell.innerHTML = originalContent;
+              alert('Error al actualizar la fecha: ' + error.message);
+            }
+          });
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              input.blur();
+            }
+            if (e.key === 'Escape') {
+              cell.innerHTML = originalContent;
+            }
+          });
+          cell.innerHTML = '';
+          cell.appendChild(input);
+          input.focus();
+        }
 
-    document.getElementById('prev-customers-page').addEventListener('click', () => {
-      if (currentCustomersPage > 1) {
-        currentCustomersPage--;
-        displayCustomersTable(customersData);
-      }
-    });
+        function makeTypeEditable(element, orderId, customerId) {
+          if (element.querySelector('select')) return;
+          try {
+            const currentType = element.textContent.trim().split(' ').pop();
+            const select = document.createElement('select');
+            select.style.width = '100%';
+            select.style.padding = '5px';
+            select.style.borderRadius = '4px';
+            select.style.border = '1px solid #ddd';
+            const types = [{
+              value: 'LEAD',
+              label: '🎯 LEAD'
+            }, {
+              value: 'RIDER',
+              label: '🛵 RIDER'
+            }, {
+              value: 'CLIENTE',
+              label: '👤 CLIENTE'
+            }, {
+              value: 'FIJO',
+              label: '⭐ FIJO'
+            }, {
+              value: 'WEB',
+              label: '🌐 WEB'
+            }];
+            types.forEach(type => {
+              const option = document.createElement('option');
+              option.value = type.value;
+              option.textContent = type.label;
+              option.selected = currentType === type.value;
+              select.appendChild(option);
+            });
+            const elementRef = element;
+            select.addEventListener('change', async () => {
+              try {
+                await updateCustomerTipo(customerId, select.value);
+                const typeDetails = getCustomerTypeDetails(select.value);
+                const newContent = `${typeDetails.emoji} ${select.value}`;
+                if (document.body.contains(elementRef)) {
+                  elementRef.innerHTML = newContent;
+                  elementRef.style.backgroundColor = typeDetails.color;
+                  debugLog('Customer type updated successfully', 'success');
+                  await listOrders();
+                }
+              } catch (error) {
+                debugLog('Error updating customer type:', 'error', error);
+                alert('Error al actualizar el tipo de cliente: ' + error.message);
+              }
+            });
+            element.innerHTML = '';
+            element.appendChild(select);
+            select.focus();
+          } catch (error) {
+            debugLog('Error in makeTypeEditable:', 'error', error);
+            alert('Error al editar el tipo: ' + error.message);
+          }
+        }
 
-    document.getElementById('next-customers-page').addEventListener('click', () => {
-      const totalPages = Math.ceil(customersData.length / customersPerPage);
-      if (currentCustomersPage < totalPages) {
-        currentCustomersPage++;
-        displayCustomersTable(customersData);
-      }
-    });
+        function generateCustomerEmail(phone, name) {
+          const cleanPhone = phone.replace(/\D/g, '').slice(-4);
+          const cleanName = name ? name.toLowerCase().replace(/[^a-z]/g, '') : '';
+          let email = '';
+          if (cleanName) {
+            email = `${cleanName.slice(0, 8)}${cleanPhone}@cliente.local`;
+          } else {
+            email = `cliente${cleanPhone}@cliente.local`;
+          }
+          debugLog('Generated email:', email);
+          return email;
+        }
 
-    (async () => {
-      await displayDashboard();
-    })();
-  </script>
-</div>
-</body></html>
+        function scrollToTop() {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+
+        function scrollToBottom() {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+
+        function openAvatarModal(customerId) {}
+
+        function toggleFilters() {
+          const filters = document.querySelector('.filters');
+          filters.classList.toggle('hidden');
+        }
+
+        async function applyFilters() {
+          if (isFiltering) {
+            return;
+          }
+          isFiltering = true;
+          try {
+            await clearCache();
+            await listOrders();
+          } finally {
+            isFiltering = false;
+          }
+        }
+    </script>
+    <style>
+        /* Enhanced styles to modernize and beautify the UI */
+
+        /* Base variables with updated colors */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #45a049;
+            --accent-color: #ff6b6b;
+            --bg-color: #f8f9fa;
+            --text-color: #2c3e50;
+            --border-radius: 8px;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --table-header: #edf2f7;
+            --table-stripe: #f8fafc;
+            --table-hover: #e2e8f0;
+        }
+
+        /* General styling */
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+            padding: 20px;
+        }
+
+        /* Action menu styling */
+        .action-menu {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+
+        .menu-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .menu-actions button {
+            padding: 12px 20px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .menu-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .menu-actions button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Filters styling */
+        .filters {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .search-bar {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 15px;
+          width: 100%;
+          max-width: 400px;
+        }
+
+        .search-bar input {
+          flex: 1;
+          padding: 10px 15px;
+          border: 2px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 14px;
+          transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+          outline: none;
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .search-bar input::placeholder {
+          color: #a0aec0;
+        }
+
+        .filters-row {
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          width: 100%;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .filters select {
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            min-width: 160px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: #4a5568;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+        }
+
+        .filters select:hover {
+            border-color: var(--primary-color);
+        }
+
+        .filters select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .filters label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .filters label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .filters input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filters input[type="checkbox"]:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Table styling */
+        #orderTable {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #orderTable th {
+            background: var(--table-header);
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 2px solid #ddd;
+        }
+
+        #orderTable td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        #orderTable tbody tr:nth-child(even) {
+            background: var(--table-stripe);
+        }
+
+        #orderTable tbody tr:hover {
+            background: var(--table-hover);
+        }
+
+        /* Status select styling */
+        #orderTable select {
+            padding: 6px 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Customer photo styling */
+        #orderTable img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Notes styling */
+        .note-editor {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Loading bar styling */
+        .loading-container {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .loading-bar {
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: var(--primary-color);
+            width: 50%;
+            animation: loading 1s infinite;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+
+        /* Scroll buttons styling */
+        .scroll-button {
+            background: var(--primary-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            box-shadow: var(--shadow);
+            position: fixed;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #scrollToTop {
+            bottom: 80px;
+        }
+
+        #scrollToBottom {
+            bottom: 20px;
+        }
+
+        .scroll-button:hover {
+            transform: translateY(-2px);
+            background: var(--secondary-color);
+        }
+
+        /* Total cell styling */
+        .total-cell {
+            font-weight: 600;
+            color: var(--secondary-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .total-cell:hover {
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        .total-cell:active {
+            background-color: rgba(74, 144, 226, 0.2);
+        }
+
+        /* Pagination controls */
+        #paginationControls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #paginationControls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #paginationControls button:disabled {
+            background: #ddd;
+            cursor: not-allowed;
+        }
+
+        /* Sort indicators styling */
+        .sortable {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .sortable:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .sort-indicator {
+            margin-left: 5px;
+            display: inline-block;
+            font-size: 12px;
+            color: #666;
+        }
+
+        th.sortable {
+            cursor: pointer;
+        }
+
+        th.sortable:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        th[data-sort='asc'] .sort-indicator {
+            transform: rotate(180deg);
+        }
+
+        th {
+            transition: background-color 0.2s ease;
+        }
+
+        /* Dark mode overrides */
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --table-header: #2d3748;
+            --table-stripe: #2d3748;
+            --table-hover: #4a5568;
+        }
+
+        /* Additional styles for avatar modal */
+        .avatar-modal img {
+            transition: transform 0.3s ease;
+        }
+
+        .avatar-modal img:hover {
+            transform: scale(1.1);
+        }
+
+        #avatarUrl:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        /* Modal Styles */
+        #orderModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            width: 80%;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-actions button:first-child {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal-actions button:last-child {
+            background: #ddd;
+            color: #333;
+        }
+
+        td[onclick] {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        td[onclick]:hover {
+            opacity: 0.8;
+        }
+
+        td select {
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        /* Highlighting for last order of day */
+        .last-order-of-day {
+          position: relative;
+        }
+
+        .last-order-of-day::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 2px;
+          background: linear-gradient(to right, transparent, #ff4444, transparent);
+        }
+
+        .last-order-of-day td:first-child {
+          position: relative;
+        }
+
+        .last-order-of-day td:first-child::before {
+          content: '•';
+          color: #ff4444;
+          position: absolute;
+          left: 4px;
+          font-size: 20px;
+          line-height: 0;
+          top: 50%;
+        }
+
+        td[onclick] input[type="date"] {
+          font-family: inherit;
+          font-size: inherit;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        td[onclick]:hover {
+          background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        td[onclick] input:focus {
+          outline: none;
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        
+        .customer-suggestion {
+            margin: 10px 0;
+        }
+        
+        .customer-suggestion button:hover {
+            background: #0284c7 !important;
+        }
+
+        .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+        }
+
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 5px solid #f3f3f3;
+          border-top: 5px solid var(--primary-color);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        #orderTable.loading {
+          visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="debugConsole" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.9);
+        color: #fff;
+        padding: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: &apos;Consolas&apos;, monospace;
+        z-index: 1001;
+        display: none;
+        font-size: 12px;
+        line-height: 1.4;
+    ">
+        <div id="consoleContent" style="margin-bottom: 30px;"></div>
+        <button onclick="toggleConsole()" class="console-close" title="Close Console">
+            &#x274c; Close
+        </button>
+        <button onclick="clearConsole()" style="
+            position: absolute;
+            right: 100px;
+            top: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        ">Clear</button>
+    </div>
+
+    <div class="action-menu" id="actionMenu">
+      <div class="menu-actions">
+        <button onclick="listOrders()" title="Cargar Pedidos">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        
+        <button onclick="clearCache()" title="Limpiar Cach&#xe9;" style="background: #ff4444;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+        
+        <button onclick="createNewOrder()" title="Nuevo Pedido">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
+        </button>
+
+        <button onclick="toggleFilters()" title="Filtros">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+            </svg>
+        </button>
+
+        <button onclick="calculateTotals()" title="Calcular Totales" style="background: #4CAF50;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+                <path d="M4 7h16M4 12h16M4 17h8"/>
+                <circle cx="18" cy="17" r="3"/>
+            </svg>
+        </button>
+
+        <button onclick="toggleConsole()" title="Toggle Console" style="background: #333;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor">
+                <path d="M12 19l9 2-9-18-9 18 9-2zm-4 6v-7h8v7h-8z"/>
+            </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="filters">
+        <div class="search-bar">
+            <input type="text" id="orderSearch" placeholder="Buscar por ID, nombre, teléfono o productos..." 
+                   oninput="applyFilters()">
+        </div>
+        <div class="filters-row">
+            <select id="monthFilter" onchange="applyFilters()">
+                <option value>Todos los meses</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+            
+            <select id="yearFilter" onchange="applyFilters()">
+                <!-- Populated by JavaScript -->
+            </select>
+
+            <select id="tipoFilter" onchange="applyFilters()">
+                <option value>Todos los tipos</option>
+                <option value="LEAD">LEAD</option>
+                <option value="RIDER">RIDER</option>
+                <option value="CLIENTE">CLIENTE</option>
+                <option value="FIJO">FIJO</option>
+                <option value="WEB">WEB</option>
+            </select>
+
+            <select id="statusFilter" onchange="applyFilters()">
+                <option value>Todos los estados</option>
+                <option value="cancelled">CANCELADO</option>
+                <option value="on-hold">TICKET</option>
+                <option value="pending">LLAMAR</option> 
+                <option value="processing">TERMINAR</option>
+                <option value="failed">DEBE</option>
+                <option value="completed">PAGO</option>
+            </select>
+
+            <select id="productFilter" onchange="applyFilters()">
+                <option value>Todos los productos</option>
+            </select>
+
+            <label>
+                <input id="pinFilter" type="checkbox" onchange="applyFilters()">
+                Pined
+            </label>
+        </div>
+    </div>
+
+    <table id="orderTable">
+        <thead>
+            <tr>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Fecha Tabla&apos;, 0)">Fecha Tabla<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Orden&apos;, 1)">Orden<span class="sort-indicator"></span></th> 
+                <th style="display: none;">Fecha Creaci&#xf3;n</th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Cliente&apos;, 3)">Cliente<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Nombre&apos;, 4)">Nombre<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Tel&#xe9;fono&apos;, 5)">Tel&#xe9;fono<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Tipo&apos;, 6)">Tipo<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Productos&apos;, 7)">Productos<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Total&apos;, 8)">Total<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Estado&apos;, 9)" style="cursor: pointer;">Estado<span class="sort-indicator"></span></th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Nota&apos;, 10)">Nota<span class="sort-indicator"></span></th>
+                <th>Acciones</th>
+                <th class="sortable" onclick="sortTableByColumn(&apos;Pined&apos;, 12)">Pined<span class="sort-indicator"></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <div id="orderModal" style="display: none;">
+        <div class="modal-content">
+            <h2>Nuevo Pedido</h2>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label for="orderDate">Fecha del Pedido:</label>
+                    <input id="orderDate" type="date">
+                </div>
+                <div class="form-group">
+                    <label for="customerSelect">Cliente:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="customerSelect" style="flex: 1;">
+                            <option value="">Seleccionar cliente...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="customerName">Nombre del Cliente:</label>
+                    <input id="customerName" type="text">
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email del Cliente:</label>
+                    <input id="customerEmail" type="email">
+                </div>
+                <div class="form-group">
+                    <label for="orderStatus">Estado del Pedido:</label>
+                    <select id="orderStatus">
+                        <option value="pending">PENDIENTE</option>
+                        <option value="cancelled">CANCELADO</option>
+                        <option value="on-hold">TICKET</option>
+                        <option value="processing">TERMINAR</option>
+                        <option value="failed">DEBE</option>
+                        <option value="completed">PAGO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="orderNotes">Notas del Pedido:</label>
+                    <textarea id="orderNotes"></textarea>
+                </div>
+                <div id="productsList"></div>
+            </form>
+            <div class="modal-actions">
+                <button onclick="submitOrder()">Crear Pedido</button>
+                <button onclick="closeOrderModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="scrollToTop" class="scroll-button" onclick="scrollToTop()">
+        &#x2191;
+    </button>
+
+    <button id="scrollToBottom" class="scroll-button" onclick="scrollToBottom()">
+        &#x2193;
+    </button>
+</body>
+</html>
